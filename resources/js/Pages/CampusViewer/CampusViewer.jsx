@@ -179,6 +179,44 @@ export default function CampusViewer() {
                     if (!groups.has(labelText)) groups.set(labelText, []);
                     groups.get(labelText).push(node);
                 });
+
+                const buildingsLocal = [];
+                for (const [name, meshes] of groups.entries()) {
+                    const groupBox = new THREE.Box3();
+                    for (const m of meshes) {
+                        const b = new THREE.Box3().setFromObject(m);
+                        groupBox.union(b);
+                    }
+                    const center = groupBox.getCenter(new THREE.Vector3());
+                    const sphere = groupBox.getBoundingSphere(
+                        new THREE.Sphere()
+                    );
+                    const r =
+                        sphere.radius ||
+                        Math.max(
+                            ...meshes.map((m) =>
+                                new THREE.Box3()
+                                    .setFromObject(m)
+                                    .getSize(new THREE.Vector3())
+                                    .length()
+                            )
+                        ) ||
+                        5;
+                    const offSetY = Math.max(
+                        1,
+                        groupBox.getSize(new THREE.Vector3()).y * 0.5 + 1
+                    );
+                    const id = name;
+                    labelsRef.current.push({
+                        id,
+                        name,
+                        meshes,
+                        center,
+                        radius: r,
+                        offSetY,
+                    });
+                    buildingsLocal.push({ id, name });
+                }
             })
             .catch((err) => {
                 console.error("Error loading models", err);
