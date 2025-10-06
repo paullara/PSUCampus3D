@@ -11,53 +11,50 @@ export default function CampusViewer() {
     const containerRef = useRef(null);
     const modelRef = useRef(null);
     const cameraRef = useRef(null);
-    const controlRef = useRef(null);
+    const controlsRef = useRef(null);
     const rendererRef = useRef(null);
-    const labelsRef = useRef(null);
+    const labelsRef = useRef([]); // group entries
     const raycasterRef = useRef(null);
 
-    // buildings
     const [buildings, setBuildings] = useState([]);
     const [selectedGroupId, setSelectedGroupId] = useState(null);
-    const [popupInformation, setPopupInformation] = useState(null);
+    const [popupInfo, setPopupInfo] = useState(null);
 
-    // keep the old css
+    // Keep previous body style for restoration (used similarly to original)
     const prevBodyBgRef = useRef(document.body.style.background);
-    const prevBodyOverFlowRef = useRef(document.body.style.overflow);
+    const prevBodyOverflowRef = useRef(document.body.style.overflow);
 
     useEffect(() => {
         const container = containerRef.current;
-
         if (!container) return;
 
-        // reset
+        // reset some page styles (same intent as original)
         try {
             document.documentElement.style.margin = "0";
             document.body.style.margin = "0";
-            document.documentElement.style.height = "100% ";
+            document.documentElement.style.height = "100%";
             document.body.style.height = "100%";
-        } catch (e) {
-            console.error("Error", e);
-        }
+        } catch (e) {}
 
-        // fullview
-        container.style.position = "0";
+        // full-viewport container
+        container.style.position = "fixed";
         container.style.left = "0";
         container.style.top = "0";
         container.style.width = "100vw";
         container.style.height = "100vh";
         container.style.zIndex = "0";
 
-        prevBodyOverFlowRef.current = document.body.style.overFlow;
+        prevBodyOverflowRef.current = document.body.style.overflow;
         prevBodyBgRef.current = document.body.style.background;
         try {
             document.body.style.background =
-                "linear-gradient(to bottom, #87CEEB, #e0f7ff, 100%)";
+                "linear-gradient(to bottom, #87CEEB 0%, #e0f7ff 100%)";
         } catch (e) {}
         document.body.style.overflow = "hidden";
 
+        // scene / camera / renderer
         const scene = new THREE.Scene();
-        scene.background = null;
+        scene.background = null; // let CSS show through
 
         const width = container.clientWidth;
         const height = container.clientHeight;
@@ -71,9 +68,8 @@ export default function CampusViewer() {
         camera.position.set(0, 20, 40);
         cameraRef.current = camera;
 
-        // renderer
         const renderer = new THREE.WebGLRenderer({
-            antilias: false,
+            antialias: false,
             alpha: true,
         });
         renderer.setSize(width, height);
@@ -87,25 +83,25 @@ export default function CampusViewer() {
         rendererRef.current = renderer;
         container.appendChild(renderer.domElement);
 
-        // ambient
         const ambient = new THREE.AmbientLight(0xffffff, 0.8);
         scene.add(ambient);
         const dir = new THREE.DirectionalLight(0xffffff, 0.6);
         dir.position.set(10, 20, 10);
         scene.add(dir);
 
-        // controls
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = false;
         controls.target.set(0, 5, 0);
-        controls.minPolarAngle = Math.PI / 2 - 0.01;
+        controls.minPolarAngle = 0;
+        controls.maxPolarAngle = Math.PI / 2 - 0.01;
         controls.screenSpacePanning = false;
-        controlRef.current = controls;
+        controlsRef.current = controls;
 
         window.__campus_camera = camera;
         window.__campus_controls = controls;
 
-        let renderRequest = false;
+        // render-on-demand setup (same as original)
+        let renderRequested = false;
         let renderTimeout = null;
         const minInterval = 80;
         let lastRenderTime = 0;
@@ -113,10 +109,10 @@ export default function CampusViewer() {
         function requestRender() {
             const now = performance.now();
             const remaining = Math.max(0, minInterval - (now - lastRenderTime));
-            if (renderRequest) return;
-            returnRequest = true;
+            if (renderRequested) return;
+            renderRequested = true;
             renderTimeout = setTimeout(() => {
-                renderRequest = false;
+                renderRequested = false;
                 lastRenderTime = performance.now();
                 render();
             }, remaining);
@@ -124,6 +120,86 @@ export default function CampusViewer() {
         window.__campus_requestRender = requestRender;
         controls.addEventListener("change", requestRender);
 
+        // clouds (copied from original)
+        let cloudsGroup = null;
+        function addClouds(radius) {
+            function makeCloudTexture(size = 256) {
+                const canvas = document.createElement("canvas");
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext("2d");
+                const grd = ctx.createRadialGradient(
+                    size / 2,
+                    size / 2,
+                    size * 0.05,
+                    size / 2,
+                    size / 2,
+                    size / 2
+                );
+                grd.addColorStop(0, "rgba(255,255,255,0.95)");
+                grd.addColorStop(0.6, "rgba(255,255,255,0.65)");
+                grd.addColorStop(1, "rgba(255,255,255,0)");
+                ctx.fillStyle = grd;
+                ctx.fillRect(0, 0, size, size);
+                const tx = new THREE.CanvasTexture(canvas);
+                tx.needsUpdate = true;
+                return tx;
+            }
+
+            cloudsGroup = new THREE.Group();
+            const cloudTexture = makeCloudTexture(256);
+
+            const cloudCount = Math.min(
+                24,
+                Math.max(6, Math.floor(radius / 8))
+            );
+            for (let i = 0; i < cloudCount; i++) {
+                const mat = new THREE.SpriteMaterial({
+                    map: cloudTexture,
+                    transparent: true,
+                    opacity: 0,
+                    depthWrite: false,
+                });
+                const sprite = new THREE.Sprite(mat);
+                const spread = radius * 1.6;
+                sprite.position.set(
+                    (Math.random() - 0.5) * spread,
+                    radius * (0.8 + Math.random() * 1.0),
+                    (Math.random() - 0.5) * spread
+                );
+                const scale = radius * (0.25 + Math.random() * 0.6);
+                sprite.scale.set(scale, scale * 0.6, 1);
+                cloudsGroup.add(sprite);
+            }
+            cloudsGroup.position.y = 0;
+            scene.add(cloudsGroup);
+
+            // fade in and drift
+            let cloudFrame = 0;
+            const cloudFrames = 60;
+            let lastTime = performance.now();
+            function animateClouds() {
+                cloudFrame++;
+                const t = Math.min(1, cloudFrame / cloudFrames);
+                cloudsGroup.children.forEach((s, idx) => {
+                    s.material.opacity = t * (0.6 + (idx % 3) * 0.12);
+                    const now = performance.now();
+                    const dt = (now - lastTime) / 1000;
+                    s.position.x +=
+                        Math.sin(now / 10000 + idx) *
+                        0.02 *
+                        dt *
+                        Math.max(10, 1);
+                });
+                lastTime = performance.now();
+                renderer.render(scene, camera);
+                if (cloudFrame < cloudFrames)
+                    requestAnimationFrame(animateClouds);
+            }
+            animateClouds();
+        }
+
+        // Raycaster that will be set up later via setupRaycaster
         raycasterRef.current = new THREE.Raycaster();
 
         const modelPath = "/models/psucampus.glb";
@@ -132,30 +208,34 @@ export default function CampusViewer() {
                 modelRef.current = model;
                 scene.add(model);
 
+                // center model like original
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
                 model.position.sub(center);
 
+                // fit camera similar to original logic
                 const fitBox = new THREE.Box3().setFromObject(model);
-                const boundingSphere = fitBox(new THREE.Sphere());
-                const radius = boundingSphere.sphere || 10;
+                const boundingSphere = fitBox.getBoundingSphere(
+                    new THREE.Sphere()
+                );
+                const radius = boundingSphere.radius || 10;
+                addClouds(radius);
 
                 const fov = (camera.fov * Math.PI) / 180;
                 const distance = Math.abs(radius / Math.sin(fov / 2));
                 const offsetFactor = 1.2;
                 camera.position.set(
-                    2,
-                    radius * 0.6 + distance * 0.07,
+                    0,
+                    radius * 0.6 + distance * 0.05,
                     distance * offsetFactor
                 );
-                camera.near = Math.max(0.4, distance / 100);
+                camera.near = Math.max(0.1, distance / 100);
                 camera.far = distance * 10;
                 camera.lookAt(new THREE.Vector3(0, 0, 0));
-                camera.updateProjectMatrix();
+                camera.updateProjectionMatrix();
                 controls.target.set(0, 0, 0);
                 controls.update();
 
-                // mesh groupings
                 labelsRef.current = [];
                 const groups = new Map();
                 let autoIndex = 1;
@@ -163,9 +243,9 @@ export default function CampusViewer() {
                     if (!node.isMesh) return;
                     const bbox = new THREE.Box3().setFromObject(node);
                     const size = new THREE.Vector3();
-                    bbox.getSize(size); // Anna Maliit ^_^;
-                    const sizeThresHold = 0.8;
-                    if (size.length() < sizeThresHold) return;
+                    bbox.getSize(size);
+                    const sizeThreshold = 0.8;
+                    if (size.length() < sizeThreshold) return;
 
                     const nameFromUserData = node.userData?.buildingName;
                     const nameFromUserDataAlt = node.userData?.name;
@@ -176,6 +256,7 @@ export default function CampusViewer() {
                         nameFromUserDataAlt ||
                         nodeName ||
                         `Building ${autoIndex++}`;
+
                     if (!groups.has(labelText)) groups.set(labelText, []);
                     groups.get(labelText).push(node);
                 });
@@ -202,7 +283,7 @@ export default function CampusViewer() {
                             )
                         ) ||
                         5;
-                    const offSetY = Math.max(
+                    const offsetY = Math.max(
                         1,
                         groupBox.getSize(new THREE.Vector3()).y * 0.5 + 1
                     );
@@ -213,15 +294,218 @@ export default function CampusViewer() {
                         meshes,
                         center,
                         radius: r,
-                        offSetY,
+                        offsetY,
                     });
                     buildingsLocal.push({ id, name });
                 }
+
+                setBuildings(buildingsLocal);
+                requestRender();
+
+                // initial focus
+                const initialId = "3DGeom-5597";
+                const foundInit = labelsRef.current.find(
+                    (l) => l.id === initialId
+                );
+                if (foundInit) {
+                    setSelectedGroupId(foundInit.id);
+                    setPopupInfo({
+                        id: foundInit.id,
+                        name: foundInit.name,
+                        count: foundInit.meshes.length,
+                        x: window.innerWidth / 2,
+                        y: window.innerHeight / 2,
+                    });
+                    try {
+                        const targetPos = foundInit.center.clone();
+                        targetPos.y += foundInit.offsetY || 2;
+                        const radius = foundInit.radius || 5;
+                        const fov = (camera.fov * Math.PI) / 180;
+                        const distance =
+                            Math.abs(radius / Math.sin(fov / 2)) * 1.2;
+                        const dir = new THREE.Vector3(1, 0.6, 1).normalize();
+                        const newCamPos = targetPos
+                            .clone()
+                            .add(dir.multiplyScalar(distance));
+                        camera.position.copy(newCamPos);
+                        controls.target.copy(targetPos);
+                        controls.update();
+                        const req = window.__campus_requestRender;
+                        if (req) req();
+                    } catch (e) {}
+                }
             })
             .catch((err) => {
-                console.error("Error loading models", err);
+                console.error("Error loading model:", err);
             });
-    });
+
+        // Wire up raycaster with our labels and static info map
+        const onSelect = (hitObject, clientX, clientY) => {
+            const root = modelRef.current;
+            if (!root) return;
+
+            // find group that contains this mesh
+            const group = labelsRef.current.find((g) =>
+                g.meshes.some((m) => m === hitObject)
+            );
+            if (group) {
+                const staticMeta = STATIC_BUILDING_INFO[group.id] || null;
+                setSelectedGroupId(group.id);
+                setPopupInfo({
+                    id: group.id,
+                    name: staticMeta?.name || group.name,
+                    department: staticMeta?.department,
+                    description: staticMeta?.description,
+                    count: group.meshes.length,
+                    x: clientX,
+                    y: clientY,
+                });
+                const req = window.__campus_requestRender;
+                if (req) req();
+                return;
+            }
+
+            // fallback: check by mesh name in STATIC_BUILDING_INFO or show mesh-level popup
+            const byNameMeta = STATIC_BUILDING_INFO[hitObject.name] || null;
+            const meshBox = new THREE.Box3().setFromObject(hitObject);
+            const meshCenter = meshBox.getCenter(new THREE.Vector3());
+            const meshSphere = meshBox.getBoundingSphere(new THREE.Sphere());
+            const meshRadius =
+                meshSphere.radius ||
+                Math.max(
+                    meshBox.getSize(new THREE.Vector3()).x,
+                    meshBox.getSize(new THREE.Vector3()).y,
+                    meshBox.getSize(new THREE.Vector3()).z
+                ) * 0.5 ||
+                1;
+            setSelectedGroupId(hitObject.name || hitObject.uuid);
+            setPopupInfo({
+                id: hitObject.name || hitObject.uuid,
+                name: byNameMeta?.name || hitObject.name || "Part",
+                department: byNameMeta?.department,
+                description: byNameMeta?.description,
+                count: 1,
+                x: clientX,
+                y: clientY,
+                _mesh: hitObject,
+                _meshCenter: meshCenter,
+                _meshRadius: meshRadius,
+            });
+            const req = window.__campus_requestRender;
+            if (req) req();
+        };
+
+        // attach the raycaster manager that listens for pointer events
+        setupRaycaster(renderer, camera, modelRef, onSelect);
+
+        // window resize
+        const onWindowResize = () => {
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        };
+        window.addEventListener("resize", onWindowResize);
+
+        // initial render
+        requestRender();
+
+        // cleanup on unmount
+        return () => {
+            if (renderTimeout) clearTimeout(renderTimeout);
+            try {
+                delete window.__campus_requestRender;
+            } catch (e) {}
+            window.removeEventListener("resize", onWindowResize);
+            controls.removeEventListener("change", requestRender);
+            // remove pointer listeners
+            // cleanup renderer/controls
+            try {
+                renderer.domElement.remove();
+            } catch (e) {}
+            controls.dispose();
+            renderer.dispose();
+            document.body.style.overflow = prevBodyOverflowRef.current;
+            try {
+                delete window.__campus_camera;
+                delete window.__campus_controls;
+            } catch (e) {}
+            if (renderer.domElement && renderer.domElement.parentNode)
+                renderer.domElement.parentNode.removeChild(renderer.domElement);
+            try {
+                document.body.style.background = prevBodyBgRef.current;
+            } catch (e) {}
+        };
+    }, []); // end main useEffect
+
+    // Sidebar interactions same as original
+    const handleGroupClick = (groupId) => {
+        setSelectedGroupId((prev) => (prev === groupId ? null : groupId));
+    };
+
+    const handleFlyToGroup = (groupId) => {
+        const found = labelsRef.current.find((l) => l.id === groupId);
+        if (found) flyToTargetSafe(found, cameraRef, controlsRef, modelRef);
+    };
+
+    const handleFlyToMesh = (groupId, meshIndex) => {
+        const found = labelsRef.current.find((l) => l.id === groupId);
+        if (!found) return;
+        const mesh = found.meshes[meshIndex];
+        if (mesh)
+            flyToMeshSafe(
+                mesh,
+                { padding: found.offsetY || 2, animate: true, frames: 40 },
+                cameraRef,
+                controlsRef,
+                modelRef
+            );
+    };
+
+    // Camera movement helpers (copied)
+    const moveCameraRelative = (forwardAmt = 0, rightAmt = 0, upAmt = 0) => {
+        const camera = cameraRef.current;
+        const controls = controlsRef.current;
+        if (!camera || !controls) return;
+
+        const forward = new THREE.Vector3(0, 0, -1)
+            .applyQuaternion(camera.quaternion)
+            .setY(0)
+            .normalize();
+        const right = new THREE.Vector3(1, 0, 0)
+            .applyQuaternion(camera.quaternion)
+            .setY(0)
+            .normalize();
+        const up = new THREE.Vector3(0, 1, 0);
+
+        const delta = new THREE.Vector3();
+        delta.add(forward.multiplyScalar(forwardAmt));
+        delta.add(right.multiplyScalar(rightAmt));
+        delta.add(up.multiplyScalar(upAmt));
+
+        camera.position.add(delta);
+        controls.target.add(delta);
+        controls.update();
+        const req = window.__campus_requestRender;
+        if (req) req();
+    };
+    const moveForward = () => moveCameraRelative(5, 0, 0);
+    const moveBackward = () => moveCameraRelative(-5, 0, 0);
+    const moveLeft = () => moveCameraRelative(0, -5, 0);
+    const moveRight = () => moveCameraRelative(0, 5, 0);
+
+    const arrowStyle = {
+        border: "none",
+        background: "transparent",
+        fontSize: 18,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 6,
+        padding: 6,
+    };
 
     return (
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
