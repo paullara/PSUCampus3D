@@ -163,8 +163,21 @@ export default function CampusViewer() {
                     if (!node.isMesh) return;
                     const bbox = new THREE.Box3().setFromObject(node);
                     const size = new THREE.Vector3();
-                    bbox.getSize(size);
-                    // Anna Maliit ^_^;
+                    bbox.getSize(size); // Anna Maliit ^_^;
+                    const sizeThresHold = 0.8;
+                    if (size.length() < sizeThresHold) return;
+
+                    const nameFromUserData = node.userData?.buildingName;
+                    const nameFromUserDataAlt = node.userData?.name;
+                    const nodeName =
+                        node.name && node.name !== "" ? node.name : null;
+                    const labelText =
+                        nameFromUserData ||
+                        nameFromUserDataAlt ||
+                        nodeName ||
+                        `Building ${autoIndex++}`;
+                    if (!groups.has(labelText)) groups.set(labelText, []);
+                    groups.get(labelText).push(node);
                 });
             })
             .catch((err) => {
