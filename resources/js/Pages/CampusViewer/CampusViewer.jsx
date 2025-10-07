@@ -1,3 +1,4 @@
+// resources/js/Pages/CampusViewer.jsx
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -6,6 +7,7 @@ import { setupRaycaster } from "./components/RaycasterManager";
 import { flyToTargetSafe, flyToMeshSafe } from "./components/ControlsManager";
 import InfoPopup from "./components/InfoPopup";
 import { STATIC_BUILDING_INFO } from "./data/buildingInfo";
+import axios from "axios";
 
 export default function CampusViewer() {
     const containerRef = useRef(null);
@@ -23,6 +25,80 @@ export default function CampusViewer() {
     // Keep previous body style for restoration (used similarly to original)
     const prevBodyBgRef = useRef(document.body.style.background);
     const prevBodyOverflowRef = useRef(document.body.style.overflow);
+
+    // Role ↔ mesh mapping: map mesh id to user role (adjust as needed)
+    const meshRoleMap = {
+        "3DGeom-1078": "bsit",
+        "3DGeom-2065": "bsit",
+        "3DGeom-2137": "bshm",
+        "3DGeom-1110": "bshm",
+        // Add more entries here for each mesh
+    };
+
+    // Helper: fetch info for a role and set popup info
+    const fetchInfoForRoleAndShowPopup = async (
+        role,
+        clientX,
+        clientY,
+        groupMeta = null
+    ) => {
+        try {
+            // Request your backend route that returns the info entries for this role
+            // Expectation: controller returns JSON array of InfoBuilding records (latest first)
+            const res = await axios.get(`/info-building/${role}`);
+            const data = res.data;
+
+            // If backend returns a single object instead of array, normalize
+            const entries = Array.isArray(data) ? data : data ? [data] : [];
+
+            if (entries.length === 0) {
+                // No dynamic info -> show default "no info" message
+                setPopupInfo({
+                    id: role,
+                    name: groupMeta?.name || role.toUpperCase(),
+                    department: role.toUpperCase(),
+                    description:
+                        "No data has been posted for this building yet.",
+                    count: 0,
+                    x: clientX,
+                    y: clientY,
+                });
+                return;
+            }
+
+            // Show latest entry (index 0) — adjust if your API sorts differently
+            const latest = entries[0];
+
+            setPopupInfo({
+                id: role,
+                // Use poster name if you store it, else role label
+                name: latest.name || groupMeta?.name || role.toUpperCase(),
+                department: role.toUpperCase(),
+                description: latest.information || "",
+                picture: latest.picture || null,
+                happenings: latest.happenings || null,
+                count: entries.length,
+                x: clientX,
+                y: clientY,
+                _rawEntries: entries, // keep raw entries if you want to expand popup later
+            });
+        } catch (err) {
+            // if request fails, fallback to static data (if any)
+            console.error("Error fetching info for role", role, err);
+            const staticMeta = STATIC_BUILDING_INFO[role] || null;
+            setPopupInfo({
+                id: role,
+                name: staticMeta?.name || role.toUpperCase(),
+                department: role.toUpperCase(),
+                description:
+                    staticMeta?.description ||
+                    "Unable to fetch dynamic info (server error).",
+                count: 0,
+                x: clientX,
+                y: clientY,
+            });
+        }
+    };
 
     useEffect(() => {
         const container = containerRef.current;
@@ -120,7 +196,7 @@ export default function CampusViewer() {
         window.__campus_requestRender = requestRender;
         controls.addEventListener("change", requestRender);
 
-        // clouds (copied from original)
+        // clouds
         let cloudsGroup = null;
         function addClouds(radius) {
             function makeCloudTexture(size = 256) {
@@ -202,6 +278,7 @@ export default function CampusViewer() {
         // Raycaster that will be set up later via setupRaycaster
         raycasterRef.current = new THREE.Raycaster();
 
+        // Load GLTF model
         const modelPath = "/models/psucampus.glb";
         loadGLTF(modelPath)
             .then((model) => {
@@ -236,6 +313,7 @@ export default function CampusViewer() {
                 controls.target.set(0, 0, 0);
                 controls.update();
 
+                // build groups (labelsRef)
                 labelsRef.current = [];
                 const groups = new Map();
                 let autoIndex = 1;
@@ -302,7 +380,7 @@ export default function CampusViewer() {
                 setBuildings(buildingsLocal);
                 requestRender();
 
-                // initial focus
+                // initial focus (if present)
                 const initialId = "3DGeom-5597";
                 const foundInit = labelsRef.current.find(
                     (l) => l.id === initialId
@@ -339,7 +417,7 @@ export default function CampusViewer() {
                 console.error("Error loading model:", err);
             });
 
-        // Wire up raycaster with our labels and static info map
+        // onSelect callback for raycast hits
         const onSelect = (hitObject, clientX, clientY) => {
             const root = modelRef.current;
             if (!root) return;
@@ -349,6 +427,26 @@ export default function CampusViewer() {
                 g.meshes.some((m) => m === hitObject)
             );
             if (group) {
+                // If we can map this group's id (label) to a role, try dynamic fetch first
+                const possibleRole =
+                    meshRoleMap[group.id] ||
+                    meshRoleMap[hitObject.name] ||
+                    null;
+                if (possibleRole) {
+                    // fetch dynamic info by role and show popup (async, but we don't await here)
+                    fetchInfoForRoleAndShowPopup(
+                        possibleRole,
+                        clientX,
+                        clientY,
+                        group
+                    );
+                    setSelectedGroupId(group.id);
+                    const req = window.__campus_requestRender;
+                    if (req) req();
+                    return;
+                }
+
+                // fallback to static info
                 const staticMeta = STATIC_BUILDING_INFO[group.id] || null;
                 setSelectedGroupId(group.id);
                 setPopupInfo({
@@ -378,6 +476,22 @@ export default function CampusViewer() {
                     meshBox.getSize(new THREE.Vector3()).z
                 ) * 0.5 ||
                 1;
+
+            // If this mesh itself maps to a role, try fetch dynamic info
+            const directRole = meshRoleMap[hitObject.name] || null;
+            if (directRole) {
+                fetchInfoForRoleAndShowPopup(
+                    directRole,
+                    clientX,
+                    clientY,
+                    null
+                );
+                setSelectedGroupId(hitObject.name || hitObject.uuid);
+                const req = window.__campus_requestRender;
+                if (req) req();
+                return;
+            }
+
             setSelectedGroupId(hitObject.name || hitObject.uuid);
             setPopupInfo({
                 id: hitObject.name || hitObject.uuid,
@@ -419,7 +533,6 @@ export default function CampusViewer() {
             } catch (e) {}
             window.removeEventListener("resize", onWindowResize);
             controls.removeEventListener("change", requestRender);
-            // remove pointer listeners
             // cleanup renderer/controls
             try {
                 renderer.domElement.remove();
@@ -463,7 +576,7 @@ export default function CampusViewer() {
             );
     };
 
-    // Camera movement helpers (copied)
+    // Camera movement helpers
     const moveCameraRelative = (forwardAmt = 0, rightAmt = 0, upAmt = 0) => {
         const camera = cameraRef.current;
         const controls = controlsRef.current;
@@ -519,19 +632,18 @@ export default function CampusViewer() {
                     width: 260,
                     maxHeight: "80vh",
                     overflowY: "auto",
-                    background: "rgba(255,255,255,0.95)",
                     padding: 8,
                     borderRadius: 8,
                     zIndex: 20,
                 }}
             >
-                <h3 style={{ margin: "0 0 8px 0", fontSize: 16 }}>Buildings</h3>
+                {/* <h3 style={{ margin: "0 0 8px 0", fontSize: 16 }}>Buildings</h3>
                 {buildings.length === 0 && (
                     <div style={{ fontSize: 13, color: "#666" }}>
                         Loading...
                     </div>
-                )}
-                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                )} */}
+                {/* <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
                     {buildings.map((b) => (
                         <li key={b.id} style={{ marginBottom: 6 }}>
                             <div style={{ display: "flex", gap: 8 }}>
@@ -640,7 +752,7 @@ export default function CampusViewer() {
                             )}
                         </li>
                     ))}
-                </ul>
+                </ul> */}
             </div>
 
             {/* Popup overlay */}
@@ -652,7 +764,6 @@ export default function CampusViewer() {
                 }}
                 onFlyTo={() => {
                     if (!popupInfo) return;
-                    // prefer group-level
                     const found = labelsRef.current.find(
                         (l) => l.id === popupInfo.id
                     );
@@ -680,7 +791,7 @@ export default function CampusViewer() {
                 }}
             />
 
-            {/* Arrow controls */}
+            {/* Arrow controls (D-pad) */}
             <div
                 aria-label="Camera controls"
                 style={{
