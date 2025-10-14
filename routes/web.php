@@ -3,7 +3,9 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\InfoBuildingController;
+use App\Http\Controllers\ArtsAndScienceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BldgInfoJson;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -28,7 +30,14 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/information-technology/dashboard', [DashboardController::class, 'informationTechnology'])->name('it.dashboard');
+Route::get('/arts-science/dashboard', [DashboardController::class, 'artsAndScience'])->name('as.dashboard');
 Route::get('/info-building/{role}', [InfoBuildingController::class, 'getByRole']);
+Route::get('/info-buildings', [InfoBuildingController::class, 'index']);
+Route::get('/information/json', [BldgInfoJson::class, 'getBuildingInfoPost']);
+Route::post('/info-buildings', [InfoBuildingController::class, 'store']);
+Route::get('/info-buildings/{id}', [InfoBuildingController::class, 'show']);
+Route::put('/info-buildings/{id}', [InfoBuildingController::class, 'update']);
+Route::delete('/info-buildings/{id}', [InfoBuildingController::class, 'destroy']);
 
 
 Route::middleware('auth')->group(function () {

@@ -11,6 +11,7 @@ class InfoBuilding extends Model
         'name',
         'information',
         'picture',
+        'video',
         'building',
         'happenings',
     ];

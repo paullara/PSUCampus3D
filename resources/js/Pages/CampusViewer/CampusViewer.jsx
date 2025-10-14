@@ -1,4 +1,3 @@
-// resources/js/Pages/CampusViewer.jsx
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -28,14 +27,26 @@ export default function CampusViewer() {
 
     // Role ↔ mesh mapping: map mesh id to user role (adjust as needed)
     const meshRoleMap = {
-        "3DGeom-1078": "bsit",
-        "3DGeom-2065": "bsit",
-        "3DGeom-2137": "bshm",
-        "3DGeom-1110": "bshm",
-        // Add more entries here for each mesh
+        "3DGeom-5559": "arts_science",
+        "3DGeom-10191": "administrative",
+        "3DGeom-5890": "education",
+        "3DGeom-5891": "education",
+        "3DGeom-9084": "sac",
+        "3DGeom-4166": "cayetano",
+        "3DGeom-4179": "cayetano",
+        "3DGeom-4173": "cayetano",
+        "3DGeom-3337": "audiovisual",
+        "3DGeom-3332": "audiovisual",
+        "3DGeom-4309": "agri",
+        "3DGeom-4308": "agri",
+        "3DGeom-6523": "cc",
+        "3DGeom-6071": "cc",
+        "3DGeom-6255": "cc",
+        "3DGeom-1104": "academic",
+        "3DGeom-3177": "twinbldg",
+        "3DGeom-9669": "hm_lb",
     };
 
-    // Helper: fetch info for a role and set popup info
     const fetchInfoForRoleAndShowPopup = async (
         role,
         clientX,
@@ -43,35 +54,19 @@ export default function CampusViewer() {
         groupMeta = null
     ) => {
         try {
-            // Request your backend route that returns the info entries for this role
-            // Expectation: controller returns JSON array of InfoBuilding records (latest first)
             const res = await axios.get(`/info-building/${role}`);
             const data = res.data;
 
-            // If backend returns a single object instead of array, normalize
             const entries = Array.isArray(data) ? data : data ? [data] : [];
 
             if (entries.length === 0) {
-                // No dynamic info -> show default "no info" message
-                setPopupInfo({
-                    id: role,
-                    name: groupMeta?.name || role.toUpperCase(),
-                    department: role.toUpperCase(),
-                    description:
-                        "No data has been posted for this building yet.",
-                    count: 0,
-                    x: clientX,
-                    y: clientY,
-                });
+                setPopupInfo(null);
                 return;
             }
-
-            // Show latest entry (index 0) — adjust if your API sorts differently
             const latest = entries[0];
 
             setPopupInfo({
                 id: role,
-                // Use poster name if you store it, else role label
                 name: latest.name || groupMeta?.name || role.toUpperCase(),
                 department: role.toUpperCase(),
                 description: latest.information || "",
@@ -80,10 +75,9 @@ export default function CampusViewer() {
                 count: entries.length,
                 x: clientX,
                 y: clientY,
-                _rawEntries: entries, // keep raw entries if you want to expand popup later
+                _rawEntries: entries,
             });
         } catch (err) {
-            // if request fails, fallback to static data (if any)
             console.error("Error fetching info for role", role, err);
             const staticMeta = STATIC_BUILDING_INFO[role] || null;
             setPopupInfo({
@@ -104,7 +98,6 @@ export default function CampusViewer() {
         const container = containerRef.current;
         if (!container) return;
 
-        // reset some page styles (same intent as original)
         try {
             document.documentElement.style.margin = "0";
             document.body.style.margin = "0";
@@ -112,7 +105,6 @@ export default function CampusViewer() {
             document.body.style.height = "100%";
         } catch (e) {}
 
-        // full-viewport container
         container.style.position = "fixed";
         container.style.left = "0";
         container.style.top = "0";
@@ -128,9 +120,8 @@ export default function CampusViewer() {
         } catch (e) {}
         document.body.style.overflow = "hidden";
 
-        // scene / camera / renderer
         const scene = new THREE.Scene();
-        scene.background = null; // let CSS show through
+        scene.background = null;
 
         const width = container.clientWidth;
         const height = container.clientHeight;
@@ -176,7 +167,6 @@ export default function CampusViewer() {
         window.__campus_camera = camera;
         window.__campus_controls = controls;
 
-        // render-on-demand setup (same as original)
         let renderRequested = false;
         let renderTimeout = null;
         const minInterval = 80;
@@ -275,22 +265,18 @@ export default function CampusViewer() {
             animateClouds();
         }
 
-        // Raycaster that will be set up later via setupRaycaster
         raycasterRef.current = new THREE.Raycaster();
 
-        // Load GLTF model
         const modelPath = "/models/psucampus.glb";
         loadGLTF(modelPath)
             .then((model) => {
                 modelRef.current = model;
                 scene.add(model);
 
-                // center model like original
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
                 model.position.sub(center);
 
-                // fit camera similar to original logic
                 const fitBox = new THREE.Box3().setFromObject(model);
                 const boundingSphere = fitBox.getBoundingSphere(
                     new THREE.Sphere()
@@ -313,7 +299,6 @@ export default function CampusViewer() {
                 controls.target.set(0, 0, 0);
                 controls.update();
 
-                // build groups (labelsRef)
                 labelsRef.current = [];
                 const groups = new Map();
                 let autoIndex = 1;
@@ -380,7 +365,7 @@ export default function CampusViewer() {
                 setBuildings(buildingsLocal);
                 requestRender();
 
-                // initial focus (if present)
+                // initial focus
                 const initialId = "3DGeom-5597";
                 const foundInit = labelsRef.current.find(
                     (l) => l.id === initialId
@@ -417,23 +402,19 @@ export default function CampusViewer() {
                 console.error("Error loading model:", err);
             });
 
-        // onSelect callback for raycast hits
         const onSelect = (hitObject, clientX, clientY) => {
             const root = modelRef.current;
             if (!root) return;
 
-            // find group that contains this mesh
             const group = labelsRef.current.find((g) =>
                 g.meshes.some((m) => m === hitObject)
             );
             if (group) {
-                // If we can map this group's id (label) to a role, try dynamic fetch first
                 const possibleRole =
                     meshRoleMap[group.id] ||
                     meshRoleMap[hitObject.name] ||
                     null;
                 if (possibleRole) {
-                    // fetch dynamic info by role and show popup (async, but we don't await here)
                     fetchInfoForRoleAndShowPopup(
                         possibleRole,
                         clientX,
@@ -446,7 +427,6 @@ export default function CampusViewer() {
                     return;
                 }
 
-                // fallback to static info
                 const staticMeta = STATIC_BUILDING_INFO[group.id] || null;
                 setSelectedGroupId(group.id);
                 setPopupInfo({
@@ -462,8 +442,6 @@ export default function CampusViewer() {
                 if (req) req();
                 return;
             }
-
-            // fallback: check by mesh name in STATIC_BUILDING_INFO or show mesh-level popup
             const byNameMeta = STATIC_BUILDING_INFO[hitObject.name] || null;
             const meshBox = new THREE.Box3().setFromObject(hitObject);
             const meshCenter = meshBox.getCenter(new THREE.Vector3());
@@ -477,7 +455,6 @@ export default function CampusViewer() {
                 ) * 0.5 ||
                 1;
 
-            // If this mesh itself maps to a role, try fetch dynamic info
             const directRole = meshRoleMap[hitObject.name] || null;
             if (directRole) {
                 fetchInfoForRoleAndShowPopup(
@@ -508,11 +485,8 @@ export default function CampusViewer() {
             const req = window.__campus_requestRender;
             if (req) req();
         };
-
-        // attach the raycaster manager that listens for pointer events
         setupRaycaster(renderer, camera, modelRef, onSelect);
 
-        // window resize
         const onWindowResize = () => {
             const w = container.clientWidth;
             const h = container.clientHeight;
@@ -522,10 +496,8 @@ export default function CampusViewer() {
         };
         window.addEventListener("resize", onWindowResize);
 
-        // initial render
         requestRender();
 
-        // cleanup on unmount
         return () => {
             if (renderTimeout) clearTimeout(renderTimeout);
             try {
@@ -533,7 +505,7 @@ export default function CampusViewer() {
             } catch (e) {}
             window.removeEventListener("resize", onWindowResize);
             controls.removeEventListener("change", requestRender);
-            // cleanup renderer/controls
+
             try {
                 renderer.domElement.remove();
             } catch (e) {}
@@ -550,9 +522,8 @@ export default function CampusViewer() {
                 document.body.style.background = prevBodyBgRef.current;
             } catch (e) {}
         };
-    }, []); // end main useEffect
+    }, []);
 
-    // Sidebar interactions same as original
     const handleGroupClick = (groupId) => {
         setSelectedGroupId((prev) => (prev === groupId ? null : groupId));
     };
@@ -576,7 +547,6 @@ export default function CampusViewer() {
             );
     };
 
-    // Camera movement helpers
     const moveCameraRelative = (forwardAmt = 0, rightAmt = 0, upAmt = 0) => {
         const camera = cameraRef.current;
         const controls = controlsRef.current;
@@ -755,43 +725,65 @@ export default function CampusViewer() {
                 </ul> */}
             </div>
 
-            {/* Popup overlay */}
-            <InfoPopup
-                popupInfo={popupInfo}
-                onClose={() => {
-                    setPopupInfo(null);
-                    setSelectedGroupId(null);
+            <div
+                style={{
+                    position: "fixed",
+                    left: 0,
+                    top: 0,
+                    width: 340,
+                    height: "100vh",
+                    background: "rgba(255,255,255,0.98)",
+                    boxShadow: "2px 0 16px rgba(0,0,0,0.10)",
+                    zIndex: 100,
+                    padding: 24,
+                    overflowY: "auto",
+                    transition: "transform 0.3s",
+                    transform: popupInfo
+                        ? "translateX(0)"
+                        : "translateX(-110%)",
+                    pointerEvents: popupInfo ? "auto" : "none",
+                    display: "flex",
+                    flexDirection: "column",
                 }}
-                onFlyTo={() => {
-                    if (!popupInfo) return;
-                    const found = labelsRef.current.find(
-                        (l) => l.id === popupInfo.id
-                    );
-                    if (found) {
-                        flyToTargetSafe(
-                            found,
-                            cameraRef,
-                            controlsRef,
-                            modelRef
-                        );
-                    } else if (popupInfo._mesh) {
-                        flyToMeshSafe(
-                            popupInfo._mesh,
-                            {
-                                padding: popupInfo._meshRadius || 2,
-                                animate: true,
-                                frames: 45,
-                            },
-                            cameraRef,
-                            controlsRef,
-                            modelRef
-                        );
-                    }
-                    setPopupInfo(null);
-                }}
-            />
+            >
+                {popupInfo && (
+                    <InfoPopup
+                        popupInfo={popupInfo}
+                        onClose={() => {
+                            setPopupInfo(null);
+                            setSelectedGroupId(null);
+                        }}
+                        onFlyTo={() => {
+                            if (!popupInfo) return;
+                            const found = labelsRef.current.find(
+                                (l) => l.id === popupInfo.id
+                            );
+                            if (found) {
+                                flyToTargetSafe(
+                                    found,
+                                    cameraRef,
+                                    controlsRef,
+                                    modelRef
+                                );
+                            } else if (popupInfo._mesh) {
+                                flyToMeshSafe(
+                                    popupInfo._mesh,
+                                    {
+                                        padding: popupInfo._meshRadius || 2,
+                                        animate: true,
+                                        frames: 45,
+                                    },
+                                    cameraRef,
+                                    controlsRef,
+                                    modelRef
+                                );
+                            }
+                            setPopupInfo(null);
+                        }}
+                    />
+                )}
+            </div>
 
-            {/* Arrow controls (D-pad) */}
             <div
                 aria-label="Camera controls"
                 style={{

@@ -11,4 +11,9 @@ class DashboardController extends Controller
     {
         return Inertia::render('InformationTechnology/Dashboard');
     }
+
+    public function artsAndScience()
+    {
+        return Inertia::render('Arts_Science/Dashboard');
+    }
 }

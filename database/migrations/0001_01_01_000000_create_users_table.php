@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['beed','bsit','bsoa','bshm','registrar','mis','library', 'guidance','supply_room','accounting','cashier','covered_court','agri','audio_visual','student'])->default('student');
+            $table->enum('role', ['arts_science','academic','education','sac','cayetano','administrative','hm_lb','cc','agri','audiovisual','twinbldg','student'])->default('student');
             $table->rememberToken();
             $table->timestamps();
         });

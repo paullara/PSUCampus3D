@@ -36,8 +36,8 @@ class AuthenticatedSessionController extends Controller
         $user = auth()->user();
 
         switch ($user->role) {
-            case 'bsit':
-                return redirect()->intended('/information-technology/dashboard');
+            case 'arts_science':
+                return redirect()->intended('/arts-science/dashboard');
             case 'student':
                 return redirect()->intended('/dashboard');
             default:
