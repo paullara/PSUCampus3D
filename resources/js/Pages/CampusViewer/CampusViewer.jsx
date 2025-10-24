@@ -7,6 +7,7 @@ import { flyToTargetSafe, flyToMeshSafe } from "./components/ControlsManager";
 import InfoPopup from "./components/InfoPopup";
 import { STATIC_BUILDING_INFO } from "./data/buildingInfo";
 import axios from "axios";
+import { MapPin } from "lucide-react";
 
 export default function CampusViewer() {
     const containerRef = useRef(null);
@@ -14,37 +15,58 @@ export default function CampusViewer() {
     const cameraRef = useRef(null);
     const controlsRef = useRef(null);
     const rendererRef = useRef(null);
-    const labelsRef = useRef([]); // group entries
+    const labelsRef = useRef([]);
     const raycasterRef = useRef(null);
 
     const [buildings, setBuildings] = useState([]);
     const [selectedGroupId, setSelectedGroupId] = useState(null);
     const [popupInfo, setPopupInfo] = useState(null);
 
-    // Keep previous body style for restoration (used similarly to original)
     const prevBodyBgRef = useRef(document.body.style.background);
     const prevBodyOverflowRef = useRef(document.body.style.overflow);
 
-    // Role ↔ mesh mapping: map mesh id to user role (adjust as needed)
     const meshRoleMap = {
-        "3DGeom-5559": "arts_science",
-        "3DGeom-10191": "administrative",
-        "3DGeom-5890": "education",
+        "3DGeom-5559": "arts_science", // Arts and Science Building
+        "3DGeom-5586": "arts_science", // Arts and Science Building
+        "3DGeom-10191": "administrative", // Administrative Building
+        "3DGeom-5890": "education", // Education Building
         "3DGeom-5891": "education",
-        "3DGeom-9084": "sac",
-        "3DGeom-4166": "cayetano",
+        "3DGeom-9084": "sac", // Student Activity Center
+        "3DGeom-4166": "cayetano", // Cayetano Building
         "3DGeom-4179": "cayetano",
         "3DGeom-4173": "cayetano",
-        "3DGeom-3337": "audiovisual",
+        "3DGeom-3337": "audiovisual", // Audio Visual Building
         "3DGeom-3332": "audiovisual",
-        "3DGeom-4309": "agri",
+        "3DGeom-4309": "agri", // Agriculture Building
         "3DGeom-4308": "agri",
-        "3DGeom-6523": "cc",
+        "3DGeom-6523": "cc", // Covered Court
         "3DGeom-6071": "cc",
         "3DGeom-6255": "cc",
-        "3DGeom-1104": "academic",
-        "3DGeom-3177": "twinbldg",
-        "3DGeom-9669": "hm_lb",
+        "3DGeom-1104": "academic", // Academin Building
+        "3DGeom-3177": "twinbldg", // Twin Building
+        "3DGeom-9669": "hm_lb", // HM Lab Building
+    };
+
+    const meshLabelMap = {
+        "3DGeom-5559": "Arts and Science Building",
+        "3DGeom-5586": "Arts and Science Building",
+        "3DGeom-10191": "Administrative Building",
+        "3DGeom-5890": "Education Building",
+        "3DGeom-5891": "Education Building",
+        "3DGeom-9084": "Student Activity Center",
+        "3DGeom-4166": "Cayetano Building",
+        "3DGeom-4179": "Cayetano Building",
+        "3DGeom-4173": "Cayetano Building",
+        "3DGeom-3337": "Audio Visual Building",
+        "3DGeom-3332": "Audio Visual Building",
+        "3DGeom-4309": "Agriculture Building",
+        "3DGeom-4308": "Agriculture Building",
+        "3DGeom-6523": "Covered Court",
+        "3DGeom-6071": "Covered Court",
+        "3DGeom-6255": "Covered Court",
+        "3DGeom-1104": "Academic Building",
+        "3DGeom-3177": "Twin Building",
+        "3DGeom-9669": "HM Lab Building",
     };
 
     const fetchInfoForRoleAndShowPopup = async (
@@ -93,6 +115,104 @@ export default function CampusViewer() {
             });
         }
     };
+
+    function makePinTextureWithLabel(
+        size = 256,
+        color = "#ff5a5f",
+        label = ""
+    ) {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+
+        // Clear canvas
+        ctx.clearRect(0, 0, size, size);
+
+        // Draw MapPin icon
+        ctx.strokeStyle = color;
+        ctx.lineWidth = size * 0.06;
+        ctx.fillStyle = color;
+
+        // Draw pin circle
+        const centerX = size / 2;
+        const centerY = size * 0.4;
+        const radius = size * 0.15;
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw pin point
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX, centerY + radius * 2);
+        ctx.stroke();
+
+        if (label) {
+            ctx.fillStyle = "#222";
+            ctx.textAlign = "center";
+            ctx.font = `${Math.round(size * 0.11)}px sans-serif`;
+
+            // Word wrap for long labels
+            const words = label.split(" ");
+            const lines = [];
+            let currentLine = words[0];
+            const maxWidth = size * 0.9;
+
+            for (let i = 1; i < words.length; i++) {
+                const testLine = currentLine + " " + words[i];
+                if (ctx.measureText(testLine).width > maxWidth) {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            lines.push(currentLine);
+
+            // Draw each line of text
+            const lineHeight = size * 0.12;
+            const startY = size * 0.7;
+            lines.forEach((line, i) => {
+                ctx.fillText(line, size / 2, startY + i * lineHeight);
+            });
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        return texture;
+    }
+
+    function makePinTexture(size = 128, color = "#ff5a5f") {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, size, size);
+        const grd = ctx.createRadialGradient(
+            size / 2,
+            size / 2,
+            0,
+            size / 2,
+            size / 2,
+            size / 2
+        );
+        grd.addColorStop(0, color);
+        grd.addColorStop(0.55, color);
+        grd.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.fillStyle = "#fff";
+        ctx.arc(size / 2, size / 2, size * 0.16, 0, Math.PI * 2);
+        ctx.fill();
+        const tx = new THREE.CanvasTexture(canvas);
+        tx.needsUpdate = true;
+        return tx;
+    }
 
     useEffect(() => {
         const container = containerRef.current;
@@ -365,6 +485,74 @@ export default function CampusViewer() {
                 setBuildings(buildingsLocal);
                 requestRender();
 
+                try {
+                    const pinsGroup = new THREE.Group();
+
+                    pinsGroup.renderOrder = 999;
+
+                    const pinTexture = makePinTexture(128, "#ff5a5f");
+
+                    model.traverse((node) => {
+                        if (!node.isMesh) return;
+                        if (!meshRoleMap[node.name]) return;
+                        const bbox = new THREE.Box3().setFromObject(node);
+                        const center = bbox.getCenter(new THREE.Vector3());
+                        const sphere = bbox.getBoundingSphere(
+                            new THREE.Sphere()
+                        );
+                        const pinScale = Math.max(
+                            0.6,
+                            (sphere.radius || 1) * 0.6
+                        );
+
+                        const displayLabel =
+                            meshLabelMap[node.name] ||
+                            node.userData?.buildingName ||
+                            meshRoleMap[node.name] ||
+                            node.name ||
+                            "";
+
+                        const tex = makePinTextureWithLabel(
+                            256,
+                            "#ff5a5f",
+                            meshLabelMap[node.name]
+                        );
+
+                        const mat = new THREE.SpriteMaterial({
+                            map: tex,
+                            transparent: true,
+                            depthTest: false,
+                            depthWrite: false,
+                            alphaTest: 0.01,
+                        });
+
+                        const sprite = new THREE.Sprite(mat);
+                        sprite.position.copy(center);
+                        // lift slightly so pin is visible above geometry
+                        sprite.position.y += Math.max(0.25, pinScale * 0.6);
+                        sprite.scale.set(pinScale, pinScale, 1);
+
+                        sprite.userData = {
+                            isPin: true,
+                            targetMesh: node,
+                            role: meshRoleMap[node.name],
+                            displayName: displayLabel,
+                        };
+
+                        sprite.renderOrder = 1000;
+
+                        sprite.frustumCulled = false;
+
+                        pinsGroup.add(sprite);
+                    });
+                    scene.add(pinsGroup);
+
+                    const req = window.__campus_requestRender;
+                    if (req) req();
+                } catch (e) {
+                    console.warn("Failed to create pins:", e);
+                }
+
                 // initial focus
                 const initialId = "3DGeom-5597";
                 const foundInit = labelsRef.current.find(
@@ -405,6 +593,26 @@ export default function CampusViewer() {
         const onSelect = (hitObject, clientX, clientY) => {
             const root = modelRef.current;
             if (!root) return;
+
+            if (hitObject.userData?.isPin) {
+                const targetMesh = hitObject.userData.targetMesh;
+                const role = hitObject.userData.role || null;
+                const displayName = hitObject.userData.displayName || null;
+                if (role) {
+                    fetchInfoForRoleAndShowPopup(
+                        role,
+                        clientX,
+                        clientY,
+                        displayName ? { name: displayName } : null
+                    );
+                    setSelectedGroupId(targetMesh.name || targetMesh.uuid);
+                    const req = window.__campus_requestRender;
+                    if (req) req();
+                    return;
+                }
+
+                hitObject = targetMesh;
+            }
 
             const group = labelsRef.current.find((g) =>
                 g.meshes.some((m) => m === hitObject)
@@ -607,122 +815,7 @@ export default function CampusViewer() {
                     zIndex: 20,
                 }}
             >
-                {/* <h3 style={{ margin: "0 0 8px 0", fontSize: 16 }}>Buildings</h3>
-                {buildings.length === 0 && (
-                    <div style={{ fontSize: 13, color: "#666" }}>
-                        Loading...
-                    </div>
-                )} */}
-                {/* <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                    {buildings.map((b) => (
-                        <li key={b.id} style={{ marginBottom: 6 }}>
-                            <div style={{ display: "flex", gap: 8 }}>
-                                <button
-                                    style={{
-                                        flex: 1,
-                                        textAlign: "left",
-                                        padding: "6px 8px",
-                                        borderRadius: 4,
-                                        border:
-                                            selectedGroupId === b.id
-                                                ? "2px solid #2684FF"
-                                                : "1px solid #eee",
-                                        background:
-                                            selectedGroupId === b.id
-                                                ? "#F0F8FF"
-                                                : "#fff",
-                                    }}
-                                    onClick={() => handleGroupClick(b.id)}
-                                >
-                                    {b.name}
-                                </button>
-                                <button
-                                    title="Fly to this group"
-                                    onClick={() => handleFlyToGroup(b.id)}
-                                    style={{
-                                        padding: "6px 8px",
-                                        borderRadius: 4,
-                                    }}
-                                >
-                                    Go
-                                </button>
-                            </div>
-
-                            {selectedGroupId === b.id && (
-                                <div style={{ marginTop: 8, paddingLeft: 6 }}>
-                                    <div
-                                        style={{
-                                            fontSize: 13,
-                                            marginBottom: 6,
-                                        }}
-                                    >
-                                        Parts:
-                                    </div>
-                                    <ul
-                                        style={{
-                                            listStyle: "none",
-                                            padding: 0,
-                                            margin: 0,
-                                        }}
-                                    >
-                                        {(() => {
-                                            const found =
-                                                labelsRef.current.find(
-                                                    (l) => l.id === b.id
-                                                );
-                                            if (!found)
-                                                return (
-                                                    <li
-                                                        style={{
-                                                            color: "#666",
-                                                        }}
-                                                    >
-                                                        No parts found
-                                                    </li>
-                                                );
-                                            return found.meshes.map(
-                                                (m, idx) => (
-                                                    <li
-                                                        key={m.uuid}
-                                                        style={{
-                                                            display: "flex",
-                                                            gap: 8,
-                                                            marginBottom: 6,
-                                                        }}
-                                                    >
-                                                        <div
-                                                            style={{
-                                                                flex: 1,
-                                                                fontSize: 13,
-                                                            }}
-                                                        >
-                                                            {m.name || m.uuid}
-                                                        </div>
-                                                        <button
-                                                            onClick={() =>
-                                                                handleFlyToMesh(
-                                                                    b.id,
-                                                                    idx
-                                                                )
-                                                            }
-                                                            style={{
-                                                                padding:
-                                                                    "4px 8px",
-                                                                borderRadius: 4,
-                                                            }}
-                                                        >
-                                                            Fly
-                                                        </button>
-                                                    </li>
-                                                )
-                                            );
-                                        })()}
-                                    </ul>
-                                </div>
-                            )}
-                        </li>
-                    ))}
-                </ul> */}
+                {/* UI list panel commented out in your pasted code */}
             </div>
 
             <div
@@ -798,57 +891,7 @@ export default function CampusViewer() {
                     zIndex: 40,
                     pointerEvents: "auto",
                 }}
-            >
-                <div
-                    style={{
-                        position: "relative",
-                        width: 96,
-                        height: 96,
-                        borderRadius: 12,
-                        background: "rgba(255,255,255,0.95)",
-                        boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
-                        display: "grid",
-                        gridTemplateColumns: "repeat(3, 1fr)",
-                        gridTemplateRows: "repeat(3, 1fr)",
-                        gap: 6,
-                        padding: 6,
-                    }}
-                >
-                    <div />
-                    <button
-                        onClick={() => moveForward()}
-                        title="Forward"
-                        style={arrowStyle}
-                    >
-                        ▲
-                    </button>
-                    <div />
-                    <button
-                        onClick={() => moveLeft()}
-                        title="Left"
-                        style={arrowStyle}
-                    >
-                        ◀
-                    </button>
-                    <div />
-                    <button
-                        onClick={() => moveRight()}
-                        title="Right"
-                        style={arrowStyle}
-                    >
-                        ▶
-                    </button>
-                    <div />
-                    <button
-                        onClick={() => moveBackward()}
-                        title="Backward"
-                        style={arrowStyle}
-                    >
-                        ▼
-                    </button>
-                    <div />
-                </div>
-            </div>
+            ></div>
         </div>
     );
 }
