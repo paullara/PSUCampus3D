@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure the app fills the full viewport and remove default margins */
+html,
+body,
+#app {
+    height: 100%;
+    margin: 0;
+}
+
+/* Default sky background for the whole page (visible behind transparent canvas) */
+body {
+    background: linear-gradient(to bottom, #87ceeb 0%, #e0f7ff 100%);
+}
+
+/* Make Inertia root fill available space if it has a different selector */
+.inertia-root,
+.app-root {
+    height: 100%;
+}
