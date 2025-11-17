@@ -141,7 +141,6 @@ export default function CampusViewer() {
             URL.revokeObjectURL(url);
         };
         img.onerror = () => {
-            
             texture.needsUpdate = true;
             URL.revokeObjectURL(url);
         };
@@ -738,7 +737,7 @@ export default function CampusViewer() {
                                 "clinic",
                             ],
 
-                            arts_science: [],
+                            arts_science: ["gened", "paso"],
                         };
 
                         const officeRoleLabelMap = {
@@ -763,6 +762,9 @@ export default function CampusViewer() {
                             student_services_office: "Student Services Office",
                             supreme_student_council: "Supreme Student Council",
                             clinic: "Clinic / Health Center",
+
+                            gened: "General Education",
+                            paso: "Production and Auxiliary Services Office",
                         };
 
                         for (const [role, entry] of roleBuckets.entries()) {
@@ -1101,58 +1103,103 @@ export default function CampusViewer() {
         padding: 6,
     };
 
+    const PSU_BLUE = "#003366"; // PSU Blue
+    const PSU_GOLD = "#FFB81C"; // PSU Gold
+    const PSU_LIGHT_BLUE = "#E8F0F7";
+
     return (
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
             <div ref={containerRef} />
 
+            {/* PSU Buildings Sidebar */}
             <div
                 style={{
                     position: "absolute",
                     left: 10,
                     top: 10,
-                    width: 260,
-                    maxHeight: "80vh",
+                    width: 330,
+                    maxHeight: "100vh",
                     overflowY: "auto",
-                    padding: 8,
-                    borderRadius: 8,
+                    padding: 0,
+                    borderRadius: 12,
                     zIndex: 20,
+                    background: "#ffffff",
+                    boxShadow: "0 4px 20px rgba(0, 51, 102, 0.15)",
+                    border: `2px solid ${PSU_BLUE}`,
                 }}
             >
                 <div
-                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                    style={{
+                        background: `linear-gradient(135deg, ${PSU_BLUE} 0%, ${PSU_BLUE}dd 100%)`,
+                        padding: "16px 20px",
+                        borderRadius: "10px 10px 0 0",
+                        borderBottom: `3px solid ${PSU_GOLD}`,
+                    }}
                 >
-                    <div style={{ fontWeight: 700, marginBottom: 6 }}>
-                        PSU Buildings
+                    <div
+                        style={{
+                            fontWeight: 700,
+                            color: PSU_GOLD,
+                            fontSize: 16,
+                            letterSpacing: 0.5,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                        }}
+                    >
+                        <MapPin size={20} color={PSU_GOLD} />
+                        PSU BUILDINGS
                     </div>
+                </div>
+
+                <div
+                    style={{
+                        padding: "12px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 10,
+                    }}
+                >
                     {pinnedItems.length === 0 ? (
-                        <div style={{ color: "#666", fontSize: 13 }}>
-                            No pinned places yet (model still loading or none
-                            defined).
+                        <div
+                            style={{
+                                color: "#999",
+                                fontSize: 13,
+                                textAlign: "center",
+                                padding: "20px 10px",
+                            }}
+                        >
+                            Loading campus buildings...
                         </div>
                     ) : (
                         pinnedItems.map((p) => {
                             const isExpanded = !!expandedPins[p.id];
+                            const isSelected =
+                                selectedGroupId === (p.mesh?.name || p.id);
+
                             return (
-                                <div key={p.id} style={{ marginBottom: 6 }}>
+                                <div key={p.id}>
                                     <div
                                         style={{
                                             display: "flex",
                                             alignItems: "center",
                                             justifyContent: "space-between",
-                                            background:
-                                                selectedGroupId ===
-                                                (p.mesh?.name || p.id)
-                                                    ? "rgba(0,0,0,0.06)"
-                                                    : "transparent",
-                                            padding: "6px 8px",
-                                            borderRadius: 6,
+                                            background: isSelected
+                                                ? PSU_LIGHT_BLUE
+                                                : "#f8f9fa",
+                                            padding: "10px 12px",
+                                            borderRadius: 8,
+                                            border: isSelected
+                                                ? `2px solid ${PSU_BLUE}`
+                                                : "1px solid #e0e0e0",
+                                            transition: "all 0.2s ease",
                                         }}
                                     >
                                         <div
                                             style={{
                                                 display: "flex",
                                                 alignItems: "center",
-                                                gap: 8,
+                                                gap: 10,
                                                 flex: 1,
                                             }}
                                         >
@@ -1177,6 +1224,13 @@ export default function CampusViewer() {
                                                             cursor: "pointer",
                                                             padding: 4,
                                                             fontSize: 14,
+                                                            color: PSU_BLUE,
+                                                            transition:
+                                                                "transform 0.2s",
+                                                            transform:
+                                                                isExpanded
+                                                                    ? "rotate(180deg)"
+                                                                    : "rotate(0)",
                                                         }}
                                                         aria-label={
                                                             isExpanded
@@ -1184,14 +1238,21 @@ export default function CampusViewer() {
                                                                 : "Expand"
                                                         }
                                                     >
-                                                        {isExpanded ? "▾" : "▸"}
+                                                        ▾
                                                     </button>
                                                 )}
+                                            {!p.children ||
+                                                (p.children.length === 0 && (
+                                                    <div
+                                                        style={{ width: 24 }}
+                                                    />
+                                                ))}
                                             <div style={{ flex: 1 }}>
                                                 <div
                                                     style={{
                                                         fontSize: 13,
                                                         fontWeight: 600,
+                                                        color: PSU_BLUE,
                                                     }}
                                                 >
                                                     {p.displayName}
@@ -1206,12 +1267,29 @@ export default function CampusViewer() {
                                                     handleFlyToPin(p)
                                                 }
                                                 style={{
-                                                    background: "#0ea5a4",
+                                                    background: PSU_BLUE,
                                                     color: "#fff",
                                                     border: "none",
-                                                    padding: "6px 8px",
+                                                    padding: "6px 10px",
                                                     borderRadius: 6,
                                                     cursor: "pointer",
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    transition: "all 0.2s ease",
+                                                    boxShadow:
+                                                        "0 2px 8px rgba(0, 51, 102, 0.2)",
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.target.style.background =
+                                                        PSU_GOLD;
+                                                    e.target.style.color =
+                                                        PSU_BLUE;
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.target.style.background =
+                                                        PSU_BLUE;
+                                                    e.target.style.color =
+                                                        "#fff";
                                                 }}
                                             >
                                                 Fly
@@ -1222,11 +1300,26 @@ export default function CampusViewer() {
                                                 }
                                                 style={{
                                                     background: "#fff",
-                                                    color: "#333",
-                                                    border: "1px solid #ddd",
-                                                    padding: "6px 8px",
+                                                    color: PSU_BLUE,
+                                                    border: `1.5px solid ${PSU_BLUE}`,
+                                                    padding: "6px 10px",
                                                     borderRadius: 6,
                                                     cursor: "pointer",
+                                                    fontSize: 12,
+                                                    fontWeight: 600,
+                                                    transition: "all 0.2s ease",
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.target.style.background =
+                                                        PSU_BLUE;
+                                                    e.target.style.color =
+                                                        "#fff";
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.target.style.background =
+                                                        "#fff";
+                                                    e.target.style.color =
+                                                        PSU_BLUE;
                                                 }}
                                             >
                                                 Info
@@ -1234,17 +1327,19 @@ export default function CampusViewer() {
                                         </div>
                                     </div>
 
-                                    {/* children list */}
+                                    {/* Children List */}
                                     {p.children &&
                                         p.children.length > 0 &&
                                         isExpanded && (
                                             <div
                                                 style={{
-                                                    marginTop: 6,
-                                                    marginLeft: 18,
+                                                    marginTop: 8,
+                                                    marginLeft: 0,
                                                     display: "flex",
                                                     flexDirection: "column",
                                                     gap: 6,
+                                                    paddingLeft: 12,
+                                                    borderLeft: `3px solid ${PSU_GOLD}`,
                                                 }}
                                             >
                                                 {p.children.map((c) => (
@@ -1256,10 +1351,25 @@ export default function CampusViewer() {
                                                                 "center",
                                                             justifyContent:
                                                                 "space-between",
-                                                            padding: "6px 8px",
+                                                            padding: "8px 10px",
                                                             borderRadius: 6,
                                                             background:
-                                                                "rgba(0,0,0,0.02)",
+                                                                "#f0f4f8",
+                                                            border: "1px solid #d0d9e8",
+                                                            transition:
+                                                                "all 0.2s ease",
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            e.currentTarget.style.background =
+                                                                PSU_LIGHT_BLUE;
+                                                            e.currentTarget.style.borderColor =
+                                                                PSU_GOLD;
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            e.currentTarget.style.background =
+                                                                "#f0f4f8";
+                                                            e.currentTarget.style.borderColor =
+                                                                "#d0d9e8";
                                                         }}
                                                     >
                                                         <div
@@ -1267,38 +1377,53 @@ export default function CampusViewer() {
                                                         >
                                                             <div
                                                                 style={{
-                                                                    fontSize: 13,
+                                                                    fontSize: 12,
+                                                                    color: "#333",
+                                                                    fontWeight: 500,
                                                                 }}
                                                             >
                                                                 {c.displayName}
                                                             </div>
                                                         </div>
-                                                        <div
+                                                        <button
+                                                            onClick={() =>
+                                                                handleOpenInfo(
+                                                                    c
+                                                                )
+                                                            }
                                                             style={{
-                                                                display: "flex",
-                                                                gap: 6,
+                                                                background:
+                                                                    PSU_GOLD,
+                                                                color: PSU_BLUE,
+                                                                border: "none",
+                                                                padding:
+                                                                    "4px 8px",
+                                                                borderRadius: 4,
+                                                                cursor: "pointer",
+                                                                fontSize: 11,
+                                                                fontWeight: 600,
+                                                                transition:
+                                                                    "all 0.2s ease",
+                                                            }}
+                                                            onMouseEnter={(
+                                                                e
+                                                            ) => {
+                                                                e.target.style.background =
+                                                                    PSU_BLUE;
+                                                                e.target.style.color =
+                                                                    PSU_GOLD;
+                                                            }}
+                                                            onMouseLeave={(
+                                                                e
+                                                            ) => {
+                                                                e.target.style.background =
+                                                                    PSU_GOLD;
+                                                                e.target.style.color =
+                                                                    PSU_BLUE;
                                                             }}
                                                         >
-                                                            <button
-                                                                onClick={() =>
-                                                                    handleOpenInfo(
-                                                                        c
-                                                                    )
-                                                                }
-                                                                style={{
-                                                                    background:
-                                                                        "#fff",
-                                                                    color: "#333",
-                                                                    border: "1px solid #ddd",
-                                                                    padding:
-                                                                        "6px 8px",
-                                                                    borderRadius: 6,
-                                                                    cursor: "pointer",
-                                                                }}
-                                                            >
-                                                                Info
-                                                            </button>
-                                                        </div>
+                                                            Info
+                                                        </button>
                                                     </div>
                                                 ))}
                                             </div>
