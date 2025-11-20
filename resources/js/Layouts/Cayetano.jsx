@@ -19,7 +19,7 @@ export default function Cayetano({ header, children }) {
                         <div className="flex">
                             <div className="flex items-center gap-2 shrink-0">
                                 <Link
-                                    href="/"
+                                    href="/cayetano/posting"
                                     className="flex items-center gap-2"
                                 >
                                     <ApplicationLogo className="h-9 w-auto text-blue-600" />

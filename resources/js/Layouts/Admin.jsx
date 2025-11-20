@@ -5,7 +5,7 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link, usePage } from "@inertiajs/react";
 import { useState } from "react";
 
-export default function Clinic({ header, children }) {
+export default function Admin({ header, children }) {
     const user = usePage().props.auth.user;
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -19,7 +19,7 @@ export default function Clinic({ header, children }) {
                         <div className="flex">
                             <div className="flex items-center gap-2 shrink-0">
                                 <Link
-                                    href="/clinic/posting"
+                                    href="/admin/posting"
                                     className="flex items-center gap-2"
                                 >
                                     <ApplicationLogo className="h-9 w-auto text-blue-600" />

@@ -151,5 +151,10 @@ class DashboardController extends Controller
     {
         return Inertia::render('IT/Posting');
     }
+    
+    public function admin()
+    {
+        return Inertia::render('Admin/Posting');
+    }
 
 }

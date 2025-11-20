@@ -19,7 +19,7 @@ export default function SSO({ header, children }) {
                         <div className="flex">
                             <div className="flex items-center gap-2 shrink-0">
                                 <Link
-                                    href="/"
+                                    href="/sso/posting"
                                     className="flex items-center gap-2"
                                 >
                                     <ApplicationLogo className="h-9 w-auto text-blue-600" />

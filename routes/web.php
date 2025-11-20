@@ -60,6 +60,9 @@ Route::get('/audiovisual/posting', [DashboardController::class, 'audioVisual'])-
 // TwinBuilding
 Route::get('/twinbuilding/posting', [DashboardController::class, 'twinBuilding'])->name('twinbuilding.posting');
 
+Route::get('/admin/posting', [DashboardController::class, 'admin'])->name('admin.posting');
+
+
 // Academic
 Route::get('/hmo/posting', [DashboardController::class, 'hmo'])->name('hmo.posting');
 Route::get('/boa/posting', [DashboardController::class, 'boa'])->name('boa.posting');

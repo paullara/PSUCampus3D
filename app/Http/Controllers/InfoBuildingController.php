@@ -32,8 +32,9 @@ class InfoBuildingController extends Controller
             'name' => 'required|string|max:255',
             'information' => 'nullable|string',
             'happenings' => 'nullable|string',
-            'picture' => 'nullable|file|mimes:jpg,jpeg,png,gif',
-            'video' => 'nullable|file|mimes:mp4,avi,mov,wmv',
+            'video' => 'nullable|mimes:mp4,mov,avi,wmv|max:512000',
+            'picture' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:51200'
+
         ]);
 
         $validated['user_id'] = auth()->id();

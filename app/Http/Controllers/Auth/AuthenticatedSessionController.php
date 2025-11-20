@@ -90,6 +90,8 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->intended('/ced/posting');
             case 'coa': 
                 return redirect()->intended('/coa/posting');
+            case 'admin':
+                return redirect()->intended('/admin/posting');
             default:
                 return redirect()->intended('/dashboard');
         }
