@@ -17,9 +17,9 @@ class InfoBuildingsTableSeeder extends Seeder
                 'user_id' => $user->id,
                 'name' => ucfirst(str_replace('_', ' ', $user->role)) . ' Building',
                 'information' => 'Information for ' . $user->role . ' building.',
-                'picture' => null,
-                'video' => null,
-                'happenings' => 'Sample event for ' . $user->role,
+                // 'picture' => null,
+                // 'video' => null,
+                // 'happenings' => 'Sample event for ' . $user->role,
             ]);
         }
     }

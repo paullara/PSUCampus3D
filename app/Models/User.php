@@ -51,4 +51,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(InfoBuildings::class);
     }
+
+    public function happenings()
+    {
+        return $this->hasMany(Happening::class);
+    }
+
+    public function services()
+    {
+        return $this->hasMany(Service::class);
+    }
 }

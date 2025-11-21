@@ -91,50 +91,155 @@ export default function CampusViewer() {
         else setSidebarOpen(true);
     }, [isMobile]);
 
-    const fetchInfoForRoleAndShowPopup = async (
+    // const fetchInfoForRoleAndShowPopup = async (
+    //     role,
+    //     clientX,
+    //     clientY,
+    //     groupMeta = null
+    // ) => {
+    //     try {
+    //         const res = await axios.get(`/info-building/${role}`);
+    //         const data = res.data;
+
+    //         const entries = Array.isArray(data) ? data : data ? [data] : [];
+
+    //         if (entries.length === 0) {
+    //             setPopupInfo(null);
+    //             return;
+    //         }
+    //         const latest = entries[0];
+
+    //         setPopupInfo({
+    //             id: role,
+    //             name: latest.name || groupMeta?.name || role.toUpperCase(),
+    //             department: role.toUpperCase(),
+    //             description: latest.information || "",
+    //             picture: latest.picture || null,
+    //             happenings: latest.happenings || null,
+    //             count: entries.length,
+    //             x: clientX,
+    //             y: clientY,
+    //             _rawEntries: entries,
+    //         });
+    //     } catch (err) {
+    //         console.error("Error fetching info for role", role, err);
+    //         const staticMeta = STATIC_BUILDING_INFO[role] || null;
+    //         setPopupInfo({
+    //             id: role,
+    //             name: staticMeta?.name || role.toUpperCase(),
+    //             department: role.toUpperCase(),
+    //             description:
+    //                 staticMeta?.description ||
+    //                 "Unable to fetch dynamic info (server error).",
+    //             count: 0,
+    //             x: clientX,
+    //             y: clientY,
+    //         });
+    //     }
+    // };
+
+    // const fetchHappeningsForShowPopup = async (
+    //     role,
+    //     clientX,
+    //     clientY
+    //     // groupMeta = null
+    // ) => {
+    //     try {
+    //         const res = await axios.get(`/happenings/${role}`);
+    //         const data = res.data;
+
+    //         const entries = Array.isArray(data) ? data : data ? [data] : [];
+
+    //         if (entries.length === 0) {
+    //             setPopupInfo(null);
+    //             return;
+    //         }
+
+    //         const latest = entries[0];
+
+    //         setPopupInfo({
+    //             id: role,
+    //             happenings: latest.happenings,
+    //             picture: latest.picture || null,
+    //             video: latest.video || null,
+    //             count: entries.length,
+    //             x: clientX,
+    //             y: clientY,
+    //             _rawEntries: entries,
+    //         });
+    //     } catch (err) {
+    //         console.error("Error fetching happenings for role", role, err);
+    //         const staticMeta = STATIC_BUILDING_INFO[role] || null;
+    //         setPopupInfo({
+    //             id: role,
+    //             happenings:
+    //                 staticMeta?.happenings ||
+    //                 "Unabele to fetch dynamic happenings.",
+    //             count: 0,
+    //             x: clientX,
+    //             y: clientY,
+    //         });
+    //     }
+    // };
+
+    const fetchAllPopupData = async (
         role,
         clientX,
         clientY,
         groupMeta = null
     ) => {
         try {
-            const res = await axios.get(`/info-building/${role}`);
-            const data = res.data;
+            const [infoRes, happRes, serviceRes] = await Promise.all([
+                axios.get(`/info-building/${role}`),
+                axios.get(`/happenings/${role}`),
+                axios.get(`/services/${role}`),
+            ]);
 
-            const entries = Array.isArray(data) ? data : data ? [data] : [];
+            const infoEntries = Array.isArray(infoRes.data)
+                ? infoRes.data
+                : infoRes.data
+                ? [infoRes.data]
+                : [];
+            const happEntries = Array.isArray(happRes.data)
+                ? happRes.data
+                : happRes.data
+                ? [happRes.data]
+                : [];
+            const serviceEntries = Array.isArray(serviceRes.data)
+                ? serviceRes.data
+                : serviceRes.data
+                ? [serviceRes.data]
+                : [];
 
-            if (entries.length === 0) {
-                setPopupInfo(null);
-                return;
-            }
-            const latest = entries[0];
+            const latestInfo = infoEntries[0] || {};
+            const latestHapp = happEntries[0] || {};
+            const latestService = serviceEntries[0] || {};
 
             setPopupInfo({
                 id: role,
-                name: latest.name || groupMeta?.name || role.toUpperCase(),
+                name: latestInfo.name || groupMeta?.name || role.toUpperCase(),
                 department: role.toUpperCase(),
-                description: latest.information || "",
-                picture: latest.picture || null,
-                happenings: latest.happenings || null,
-                count: entries.length,
+
+                // both combined
+                description: latestInfo.information || "",
+                picture: latestHapp.picture || latestInfo.picture || null,
+                video: latestHapp.video || null,
+                happenings: latestHapp.happenings || null,
+                services: latestService.services || null,
+
+                infoCount: infoEntries.length,
+                happCount: happEntries.length,
+                serviceCount: serviceEntries.length,
+
                 x: clientX,
                 y: clientY,
-                _rawEntries: entries,
+
+                _rawInfo: infoEntries,
+                _rawHappenings: happEntries,
+                _rawServices: serviceEntries,
             });
         } catch (err) {
-            console.error("Error fetching info for role", role, err);
-            const staticMeta = STATIC_BUILDING_INFO[role] || null;
-            setPopupInfo({
-                id: role,
-                name: staticMeta?.name || role.toUpperCase(),
-                department: role.toUpperCase(),
-                description:
-                    staticMeta?.description ||
-                    "Unable to fetch dynamic info (server error).",
-                count: 0,
-                x: clientX,
-                y: clientY,
-            });
+            console.error("Error fetching popup data:", err);
         }
     };
 
@@ -928,12 +1033,21 @@ export default function CampusViewer() {
                 const role = hitObject.userData.role || null;
                 const displayName = hitObject.userData.displayName || null;
                 if (role) {
-                    fetchInfoForRoleAndShowPopup(
+                    // fetchInfoForRoleAndShowPopup(
+                    //     role,
+                    //     clientX,
+                    //     clientY,
+                    //     displayName ? { name: displayName } : null
+                    // );
+                    // fetchHappeningsForShowPopup(role, clientX, clientY);
+
+                    fetchAllPopupData(
                         role,
                         clientX,
                         clientY,
                         displayName ? { name: displayName } : null
                     );
+
                     setSelectedGroupId(
                         hitObject.userData.targetMesh?.name ||
                             hitObject.userData.targetMesh?.uuid
@@ -949,6 +1063,7 @@ export default function CampusViewer() {
             if (!directRole) return;
 
             fetchInfoForRoleAndShowPopup(directRole, clientX, clientY, null);
+            fetchHappeningsForShowPopup(directRole, clientX, clientY, null);
             setSelectedGroupId(hitObject.name || hitObject.uuid);
             const req = window.__campus_requestRender;
             if (req) req();
@@ -1028,12 +1143,26 @@ export default function CampusViewer() {
         if (!pin) return;
         try {
             if (pin.role) {
-                fetchInfoForRoleAndShowPopup(
+                // fetchInfoForRoleAndShowPopup(
+                //     pin.role,
+                //     window.innerWidth / 2,
+                //     window.innerHeight / 2,
+                //     { name: pin.displayName }
+                // );
+                // fetchHappeningsForShowPopup(
+                //     pin.role,
+                //     window.innerWidth / 2,
+                //     window.innerHeight / 2,
+                //     { happenings: pin.happenings }
+                // );
+
+                fetchAllPopupData(
                     pin.role,
                     window.innerWidth / 2,
                     window.innerHeight / 2,
                     { name: pin.displayName }
                 );
+
                 setSelectedGroupId(pin.mesh?.name || pin.id);
             } else {
                 const staticMeta = STATIC_BUILDING_INFO[pin.id] || null;

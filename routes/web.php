@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\InfoBuildingController;
 use App\Http\Controllers\ArtsAndScienceController;
+use App\Http\Controllers\ServicesController;
+use App\Http\Controllers\HappeningController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BldgInfoJson;
 use Illuminate\Foundation\Application;
@@ -38,6 +40,12 @@ Route::get('/info-buildings', [InfoBuildingController::class, 'index']);
 Route::post('/info-buildings', [InfoBuildingController::class, 'store']);
 Route::put('/info-buildings/{id}', [InfoBuildingController::class, 'update']);
 Route::delete('/info-buildings/{id}', [InfoBuildingController::class, 'destroy']);
+
+// Happenings
+Route::get('/happenings/{role}', [HappeningController::class, 'getByRole']);
+
+// Services
+Route::get('/services/{role}', [ServicesController::class, 'getByRole']);
 
 // Cayetano
 Route::get('/cayetano/posting', [DashboardController::class, 'cayetano'])->name('cayetano.posting');

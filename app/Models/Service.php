@@ -4,15 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class InfoBuilding extends Model
+class Service extends Model
 {
     protected $fillable = [
         'user_id',
-        'name',
-        'information',
-        // 'picture',
-        // 'video',
-        // 'happenings',
+        'services'
     ];
 
     public function user()

@@ -11,23 +11,23 @@ export default defineConfig({
         react(),
     ],
 
-    server: {
-        host: "0.0.0.0",
-        port: 5173,
-        strictPort: true,
-        hmr: {
-            host: "192.168.1.39",
-        }, 
-        cors: {
-            origin: "*",
-            methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-            allowedHeaders: [
-                "Content-Type",
-                "Authorization",
-                "X-Requested-With",
-                "Accept",
-                "Origin",
-            ],
-        },
-    },
+    // server: {
+    //     host: "0.0.0.0",
+    //     port: 5173,
+    //     strictPort: true,
+    //     hmr: {
+    //         host: "192.168.1.39",
+    //     },
+    //     cors: {
+    //         origin: "*",
+    //         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    //         allowedHeaders: [
+    //             "Content-Type",
+    //             "Authorization",
+    //             "X-Requested-With",
+    //             "Accept",
+    //             "Origin",
+    //         ],
+    //     },
+    // },
 });
