@@ -5,7 +5,7 @@ export default function Welcome({ auth }) {
         <>
             <Head title="PSU Campus 3D Map" />
             <div className="bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen flex flex-col">
-                <header className="flex justify-between items-center px-8 py-6">
+                <header className="flex flex-col gap-4 px-4 py-6 sm:px-6 md:flex-row md:items-center md:justify-between">
                     <div className="flex items-center gap-3">
                         <img
                             src="/images/psu.png"
@@ -16,7 +16,7 @@ export default function Welcome({ auth }) {
                             PSU Campus 3D Map
                         </span>
                     </div>
-                    <nav className="flex gap-4">
+                    <nav className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 md:justify-end w-full md:w-auto">
                         {auth?.user ? (
                             <Link
                                 href={route("dashboard")}
@@ -28,16 +28,16 @@ export default function Welcome({ auth }) {
                             <>
                                 <Link
                                     href={route("login")}
-                                    className="px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+                                    className="px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition text-center"
                                 >
                                     Log in
                                 </Link>
-                                <Link
+                                {/* <Link
                                     href={route("register")}
-                                    className="px-4 py-2 rounded bg-blue-100 text-blue-800 font-semibold hover:bg-blue-200 transition"
+                                    className="px-4 py-2 rounded bg-blue-100 text-blue-800 font-semibold hover:bg-blue-200 transition text-center"
                                 >
                                     Register
-                                </Link>
+                                </Link> */}
                             </>
                         )}
                     </nav>
@@ -45,8 +45,8 @@ export default function Welcome({ auth }) {
                 <main className="flex-1 flex flex-col items-center justify-center px-4 relative">
                     <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-7xl mx-auto py-12 md:py-24 gap-16">
                         {/* Left: Text */}
-                        <div className="flex-1 text-center md:text-left z-10">
-                            <h1 className="text-4xl md:text-5xl font-extrabold text-blue-900 mb-4 drop-shadow">
+                        <div className="flex-1 text-center md:text-left z-10 px-2">
+                            <h1 className="text-4xl md:text-5xl font-extrabold text-blue-900 mb-4 drop-shadow leading-tight">
                                 Explore PSU Campus in 3D
                             </h1>
                             <p className="text-lg md:text-xl text-blue-800 mb-8 max-w-xl">
@@ -57,7 +57,7 @@ export default function Welcome({ auth }) {
                             </p>
                             <Link
                                 href="/school/map"
-                                className="inline-block px-8 py-3 bg-blue-600 text-white text-lg font-bold rounded shadow hover:bg-blue-700 transition mb-8"
+                                className="inline-block px-8 py-3 bg-blue-600 text-white text-lg font-bold rounded shadow hover:bg-blue-700 transition mb-8 w-full sm:w-auto text-center"
                             >
                                 View 3D Map
                             </Link>
@@ -93,14 +93,14 @@ export default function Welcome({ auth }) {
                             </div>
                         </div>
                         {/* Right: Image */}
-                        <div className="flex-1 flex justify-center items-center relative z-10">
+                        <div className="flex-1 flex justify-center items-center relative z-10 w-full px-4">
                             {/* Decorative blurred background behind the image */}
-                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[340px] bg-blue-200 opacity-40 rounded-3xl blur-2xl z-0"></div>
+                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-xs sm:max-w-md lg:max-w-lg h-56 sm:h-72 lg:h-80 bg-blue-200 opacity-40 rounded-3xl blur-2xl z-0"></div>
                             <img
                                 src="/images/image.png"
                                 alt="3D Campus Map"
-                                className="relative w-full max-w-xl rounded-3xl shadow-2xl object-cover border-4 border-white"
-                                style={{ aspectRatio: "16/9", minHeight: 320 }}
+                                className="relative w-full max-w-2xl rounded-3xl shadow-2xl object-cover border-4 border-white"
+                                style={{ aspectRatio: "16 / 9" }}
                             />
                         </div>
                     </div>

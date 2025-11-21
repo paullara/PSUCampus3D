@@ -73,7 +73,23 @@ export default function CampusViewer() {
         "3DGeom-5597": "General Update",
     };
 
-    const [sideBarOpen, setSidebarOpen] = useState(true);
+    const getIsMobile = () =>
+        typeof window !== "undefined" ? window.innerWidth < 768 : false;
+
+    const [isMobile, setIsMobile] = useState(getIsMobile);
+    const [sideBarOpen, setSidebarOpen] = useState(() => !getIsMobile());
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const handleResize = () => setIsMobile(getIsMobile());
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    useEffect(() => {
+        if (isMobile) setSidebarOpen(false);
+        else setSidebarOpen(true);
+    }, [isMobile]);
 
     const fetchInfoForRoleAndShowPopup = async (
         role,
@@ -1109,6 +1125,74 @@ export default function CampusViewer() {
     const PSU_GOLD = "#FFB81C"; // PSU Gold
     const PSU_LIGHT_BLUE = "#E8F0F7";
 
+    const showSidebarButtonStyle = {
+        position: isMobile ? "fixed" : "absolute",
+        left: isMobile ? "50%" : 10,
+        top: isMobile ? "auto" : 10,
+        bottom: isMobile ? 20 : "auto",
+        transform: isMobile ? "translateX(-50%)" : "none",
+        zIndex: 30,
+        background: PSU_BLUE,
+        color: "white",
+        border: "none",
+        padding: "10px 14px",
+        borderRadius: 8,
+        cursor: "pointer",
+        fontWeight: 600,
+        boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+        width: isMobile ? "calc(100vw - 2.5rem)" : "auto",
+        maxWidth: isMobile ? 420 : "auto",
+    };
+
+    const sidebarContainerStyle = {
+        position: isMobile ? "fixed" : "absolute",
+        left: isMobile ? "50%" : 10,
+        top: isMobile ? "auto" : 10,
+        bottom: isMobile ? 20 : "auto",
+        transform: isMobile ? "translateX(-50%)" : "none",
+        width: isMobile ? "calc(100vw - 2rem)" : 330,
+        maxWidth: 420,
+        maxHeight: isMobile ? "60vh" : "calc(100vh - 20px)",
+        overflowY: "auto",
+        padding: 0,
+        borderRadius: 12,
+        zIndex: 20,
+        background: "#ffffff",
+        boxShadow: "0 10px 25px rgba(0, 51, 102, 0.15)",
+        border: `2px solid ${PSU_BLUE}`,
+    };
+
+    const infoPanelStyle = {
+        position: "fixed",
+        right: isMobile ? "auto" : 0,
+        left: isMobile ? 0 : "auto",
+        bottom: isMobile ? 0 : "auto",
+        top: isMobile ? "auto" : 0,
+        width: isMobile ? "100%" : 340,
+        maxWidth: isMobile ? "100%" : 360,
+        height: isMobile ? "auto" : "100vh",
+        maxHeight: isMobile ? "80vh" : "100vh",
+        background: "rgba(255,255,255,0.98)",
+        boxShadow: isMobile
+            ? "0 -8px 20px rgba(0,0,0,0.2)"
+            : "2px 0 16px rgba(0,0,0,0.10)",
+        zIndex: 60,
+        padding: isMobile ? "16px 20px" : 24,
+        overflowY: "auto",
+        transition: "transform 0.3s ease",
+        transform: popupInfo
+            ? isMobile
+                ? "translateY(0)"
+                : "translateX(0)"
+            : isMobile
+            ? "translateY(110%)"
+            : "translateX(110%)",
+        pointerEvents: popupInfo ? "auto" : "none",
+        borderRadius: isMobile ? "16px 16px 0 0" : 0,
+        display: "flex",
+        flexDirection: "column",
+    };
+
     return (
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
             <div ref={containerRef} />
@@ -1116,20 +1200,7 @@ export default function CampusViewer() {
             {!sideBarOpen && (
                 <button
                     onClick={() => setSidebarOpen(true)}
-                    style={{
-                        position: "absolute",
-                        left: 10,
-                        top: 10,
-                        zIndex: 30,
-                        background: PSU_BLUE,
-                        color: "white",
-                        border: "none",
-                        padding: "10px 14px",
-                        borderRadius: 8,
-                        cursor: "pointer",
-                        fontWeight: 600,
-                        boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-                    }}
+                    style={showSidebarButtonStyle}
                 >
                     Show Buildings
                 </button>
@@ -1137,22 +1208,7 @@ export default function CampusViewer() {
 
             {/* PSU Buildings Sidebar */}
             {sideBarOpen && (
-                <div
-                    style={{
-                        position: "absolute",
-                        left: 10,
-                        top: 10,
-                        width: 330,
-                        maxHeight: "100vh",
-                        overflowY: "auto",
-                        padding: 0,
-                        borderRadius: 12,
-                        zIndex: 20,
-                        background: "#ffffff",
-                        boxShadow: "0 4px 20px rgba(0, 51, 102, 0.15)",
-                        border: `2px solid ${PSU_BLUE}`,
-                    }}
-                >
+                <div style={sidebarContainerStyle}>
                     <div
                         style={{
                             background: `linear-gradient(135deg, ${PSU_BLUE} 0%, ${PSU_BLUE}dd 100%)`,
@@ -1495,27 +1551,7 @@ export default function CampusViewer() {
                 </div>
             )}
 
-            <div
-                style={{
-                    position: "fixed",
-                    left: 0,
-                    top: 0,
-                    width: 340,
-                    height: "100vh",
-                    background: "rgba(255,255,255,0.98)",
-                    boxShadow: "2px 0 16px rgba(0,0,0,0.10)",
-                    zIndex: 100,
-                    padding: 24,
-                    overflowY: "auto",
-                    transition: "transform 0.3s",
-                    transform: popupInfo
-                        ? "translateX(0)"
-                        : "translateX(-110%)",
-                    pointerEvents: popupInfo ? "auto" : "none",
-                    display: "flex",
-                    flexDirection: "column",
-                }}
-            >
+            <div style={infoPanelStyle}>
                 {popupInfo && (
                     <InfoPopup
                         popupInfo={popupInfo}

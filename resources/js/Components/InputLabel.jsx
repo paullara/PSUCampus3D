@@ -4,11 +4,14 @@ export default function InputLabel({
     children,
     ...props
 }) {
+    // Check if className contains text color override
+    const hasTextColor = className.includes('text-');
+    
     return (
         <label
             {...props}
             className={
-                `block text-sm font-medium text-gray-700 ` +
+                `block text-sm font-medium ${hasTextColor ? '' : 'text-gray-700'} ` +
                 className
             }
         >
