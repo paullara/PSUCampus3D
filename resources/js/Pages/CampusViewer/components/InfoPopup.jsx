@@ -211,6 +211,64 @@ export default function InfoPopup({ popupInfo, onClose, onFlyTo }) {
                     </div>
                 )}
 
+                {info.achievements && (
+                    <div style={{ marginBottom: 16 }}>
+                        <div
+                            style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: PSU_BLUE,
+                                textTransform: "uppercase",
+                                letterSpacing: 0.5,
+                                marginBottom: 8,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                            }}
+                        >
+                            Achievements
+                        </div>
+                        <div
+                            style={{
+                                padding: 12,
+                                borderRadius: 6,
+                                background: "#fff",
+                                border: `1.5px solid ${PSU_GOLD}`,
+                                transition: "all 0.2s ease",
+                                lineHeight: 1.6,
+                                color: "#333",
+                                fontSize: 14,
+                            }}
+                        >
+                            {info.achievements}
+                        </div>
+                    </div>
+                )}
+
+                {info.achievement_pic && (
+                    <div
+                        style={{
+                            width: "100%",
+                            height: 200,
+                            borderRadius: 8,
+                            overflow: "hidden",
+                            marginBottom: 16,
+                            border: `2px solid ${PSU_BLUE}`,
+                            boxShadow: "0 4px 12px rgba(0, 51, 102, 0.15)",
+                        }}
+                    >
+                        <img
+                            src={info.achievement_pic}
+                            alt={info.name}
+                            style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                            }}
+                        />
+                    </div>
+                )}
+
                 {info.services && (
                     <div style={{ marginBottom: 16 }}>
                         <div

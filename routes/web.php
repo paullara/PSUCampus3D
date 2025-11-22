@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\InfoBuildingController;
 use App\Http\Controllers\ArtsAndScienceController;
+use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\HappeningController;
 use App\Http\Controllers\DashboardController;
@@ -46,6 +47,12 @@ Route::get('/happenings/{role}', [HappeningController::class, 'getByRole']);
 
 // Services
 Route::get('/services/{role}', [ServicesController::class, 'getByRole']);
+
+// Achievements
+Route::get('/achievements/{role}', [AchievementController::class, 'getByRole']);
+
+
+
 
 // Cayetano
 Route::get('/cayetano/posting', [DashboardController::class, 'cayetano'])->name('cayetano.posting');

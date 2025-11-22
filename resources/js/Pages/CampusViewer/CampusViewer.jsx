@@ -189,10 +189,11 @@ export default function CampusViewer() {
         groupMeta = null
     ) => {
         try {
-            const [infoRes, happRes, serviceRes] = await Promise.all([
+            const [infoRes, happRes, serviceRes, achiRes] = await Promise.all([
                 axios.get(`/info-building/${role}`),
                 axios.get(`/happenings/${role}`),
                 axios.get(`/services/${role}`),
+                axios.get(`/achievements/${role}`),
             ]);
 
             const infoEntries = Array.isArray(infoRes.data)
@@ -210,10 +211,16 @@ export default function CampusViewer() {
                 : serviceRes.data
                 ? [serviceRes.data]
                 : [];
+            const achievementEntries = Array.isArray(achiRes.data)
+                ? achiRes.data
+                : achiRes.data
+                ? [achiRes.data]
+                : [];
 
             const latestInfo = infoEntries[0] || {};
             const latestHapp = happEntries[0] || {};
             const latestService = serviceEntries[0] || {};
+            const latestAchievement = achievementEntries[0] || {};
 
             setPopupInfo({
                 id: role,
@@ -226,10 +233,13 @@ export default function CampusViewer() {
                 video: latestHapp.video || null,
                 happenings: latestHapp.happenings || null,
                 services: latestService.services || null,
+                achievements: latestAchievement.achievements || null,
+                achievement_pic: latestAchievement.achievement_pic || null,
 
                 infoCount: infoEntries.length,
                 happCount: happEntries.length,
                 serviceCount: serviceEntries.length,
+                achievementCount: achievementEntries.length,
 
                 x: clientX,
                 y: clientY,
@@ -237,6 +247,7 @@ export default function CampusViewer() {
                 _rawInfo: infoEntries,
                 _rawHappenings: happEntries,
                 _rawServices: serviceEntries,
+                _rawAchievements: achievementEntries,
             });
         } catch (err) {
             console.error("Error fetching popup data:", err);
@@ -273,7 +284,7 @@ export default function CampusViewer() {
 
     function makePinTextureWithLabel(
         size = 256,
-        color = "#ff5a5f",
+        color = "#ce1319ff",
         label = ""
     ) {
         // helper to split label into a few lines (max 3)

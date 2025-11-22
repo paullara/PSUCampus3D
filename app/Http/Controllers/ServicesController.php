@@ -20,5 +20,42 @@ class ServicesController extends Controller
 
         return response()->json($services);
     }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'services' => 'required|string|max:255',
+        ]);
+
+        $validated['user_id'] = auth()->id();
+
+        $service = Service::create($validated);
+        
+        return response()->json($service, 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $service = Service::findOrFail($id);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'services' => 'required|string|max:255',
+        ]);
+
+        $service->update($validated);
+
+        return response()->json($service);
+    }
+
+    public function destroy($id)
+    {
+        $service = Service::findOrFail($id);
+        $service->delete();
+
+        return response()->json([
+            'message' => 'deleted'
+        ]);
+    }
 }
  
