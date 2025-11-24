@@ -21,6 +21,20 @@ class HappeningController extends Controller
         return response()->json($happenings);
     }
 
+    public function index()
+    {
+        if (!auth()->check()) {
+            return response()->json(['happenings' =>  []]);
+        }
+
+        $happenings = Happening::where('user_id', auth()->id())->latest()->get();
+
+        return response()->json([
+            'happenings' => $happenings,
+        ]);
+
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -51,12 +65,13 @@ class HappeningController extends Controller
     {
         $happening = Happening::findOrFail($id);
 
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
+       $validated = $request->validate([
             'happenings' => 'sometimes|string|max:255',
             'picture' => 'nullable|file|mimes:jpg,jpeg,png,gif',
             'video' => 'nullable|file|mimes:mp4,avi,mov,wmv',
         ]);
+
+        $validated['user_id'] = auth()->id();
 
         if ($file = $request->file('picture')) {
             $filename = uniqid().'.'.$file->extension();

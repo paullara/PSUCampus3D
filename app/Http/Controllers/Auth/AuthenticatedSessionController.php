@@ -67,7 +67,7 @@ class AuthenticatedSessionController extends Controller
             case 'supply_office':
                 return redirect()->intended('/supply-office/posting');
             case 'accounting_office':
-                return redirect()->intended('/supply-office/posting');
+                return redirect()->intended('/accounting-office/posting');
             case 'cashier_office':
                 return redirect()->intended('/cashier/posting');
             case 'library_office':

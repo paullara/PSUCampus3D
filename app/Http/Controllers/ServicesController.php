@@ -21,6 +21,20 @@ class ServicesController extends Controller
         return response()->json($services);
     }
 
+    public function index()
+    {
+        if (!auth()->check()) {
+            return response()->json(['services' =>  []]);
+        }
+
+        $services = Service::where('user_id', auth()->id())->latest()->get();
+
+        return response()->json([
+            'services' => $services,
+        ]);
+
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

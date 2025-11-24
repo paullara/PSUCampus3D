@@ -70,7 +70,7 @@ export default function InfoPopup({ popupInfo, onClose, onFlyTo }) {
             {/* Content Scroll Area */}
             <div style={{ flex: 1, overflowY: "auto", paddingRight: 8 }}>
                 {/* Picture */}
-                {info.picture && (
+                {/* {info.picture && (
                     <div
                         style={{
                             width: "100%",
@@ -92,7 +92,7 @@ export default function InfoPopup({ popupInfo, onClose, onFlyTo }) {
                             }}
                         />
                     </div>
-                )}
+                )} */}
 
                 {/* Description */}
                 {info.description && (
@@ -169,6 +169,30 @@ export default function InfoPopup({ popupInfo, onClose, onFlyTo }) {
                         >
                             {info.happenings}
                         </div>
+                    </div>
+                )}
+
+                {info.picture && (
+                    <div
+                        style={{
+                            width: "100%",
+                            height: 200,
+                            borderRadius: 8,
+                            overflow: "hidden",
+                            marginBottom: 16,
+                            border: `2px solid ${PSU_BLUE}`,
+                            boxShadow: "0 4px 12px rgba(0, 51, 102, 0.15)",
+                        }}
+                    >
+                        <img
+                            src={info.picture}
+                            alt={info.name}
+                            style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                            }}
+                        />
                     </div>
                 )}
 

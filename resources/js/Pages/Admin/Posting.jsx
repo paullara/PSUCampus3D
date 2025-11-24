@@ -12,9 +12,6 @@ export default function Dashboard() {
     const [form, setForm] = useState({
         name: "",
         information: "",
-        happenings: "",
-        picture: null,
-        video: null,
     });
 
     useEffect(() => {
@@ -36,24 +33,14 @@ export default function Dashboard() {
         const { name, files } = e.target;
         const file = files[0];
         setForm({ ...form, [name]: file });
-
-        if (file && name === "picture")
-            setPreview({ ...preview, picture: URL.createObjectURL(file) });
-        if (file && name === "video")
-            setPreview({ ...preview, video: URL.createObjectURL(file) });
     };
 
     const storePost = async () => {
         const formData = new FormData();
         formData.append("name", form.name);
         formData.append("information", form.information);
-        formData.append("happenings", form.happenings);
-        if (form.picture) formData.append("picture", form.picture);
-        if (form.video) formData.append("video", form.video);
 
-        const res = await axios.post("/info-buildings", formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
+        const res = await axios.post("/info-buildings", formData);
 
         setPosts([res.data, ...posts]);
     };
@@ -63,13 +50,8 @@ export default function Dashboard() {
         formData.append("_method", "PUT");
         formData.append("name", form.name);
         formData.append("information", form.information);
-        formData.append("happenings", form.happenings);
-        if (form.picture) formData.append("picture", form.picture);
-        if (form.video) formData.append("video", form.video);
 
-        const res = await axios.post(`/info-buildings/${editingId}`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
+        const res = await axios.post(`/info-buildings/${editingId}`, formData);
 
         setPosts((prev) =>
             prev.map((p) => (p.id === editingId ? res.data : p))
@@ -90,11 +72,8 @@ export default function Dashboard() {
             setForm({
                 name: "",
                 information: "",
-                happenings: "",
-                picture: null,
-                video: null,
             });
-            setPreview({ picture: null, video: null });
+
             setEditingId(null);
         } catch (err) {
             console.error("Failed to submit form", err);
@@ -108,14 +87,8 @@ export default function Dashboard() {
         setForm({
             name: post.name,
             information: post.information,
-            happenings: post.happenings,
-            picture: null,
-            video: null,
         });
-        setPreview({
-            picture: post.picture || null,
-            video: post.video || null,
-        });
+
         setEditingId(post.id);
     };
 
@@ -135,11 +108,7 @@ export default function Dashboard() {
         setForm({
             name: "",
             information: "",
-            happenings: "",
-            picture: null,
-            video: null,
         });
-        setPreview({ picture: null, video: null });
     };
 
     return (
@@ -176,54 +145,7 @@ export default function Dashboard() {
                                 rows="3"
                                 className="w-full border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
                             />
-                            <input
-                                type="text"
-                                name="happenings"
-                                value={form.happenings}
-                                onChange={handleChange}
-                                placeholder="Happenings"
-                                className="w-full border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
-                            />
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm text-gray-600 mb-1">
-                                        Picture
-                                    </label>
-                                    <input
-                                        type="file"
-                                        name="picture"
-                                        accept="image/*"
-                                        onChange={handleFileChange}
-                                        className="w-full text-sm border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
-                                    />
-                                    {preview.picture && (
-                                        <img
-                                            src={preview.picture}
-                                            alt="Preview"
-                                            className="mt-2 w-full rounded-lg object-cover max-h-48"
-                                        />
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-gray-600 mb-1">
-                                        Video
-                                    </label>
-                                    <input
-                                        type="file"
-                                        name="video"
-                                        accept="video/*"
-                                        onChange={handleFileChange}
-                                        className="w-full text-sm border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
-                                    />
-                                    {preview.video && (
-                                        <video
-                                            src={preview.video}
-                                            controls
-                                            className="mt-2 w-full rounded-lg max-h-48"
-                                        />
-                                    )}
-                                </div>
-                            </div>
+
                             <div className="flex gap-2">
                                 <button
                                     type="submit"
@@ -233,8 +155,8 @@ export default function Dashboard() {
                                     {loading
                                         ? "Saving..."
                                         : editingId
-                                        ? "Update Post"
-                                        : "Add Post"}
+                                        ? "Update Information"
+                                        : "Add Information"}
                                 </button>
                                 {editingId && (
                                     <button
@@ -287,25 +209,6 @@ export default function Dashboard() {
                                         <p className="text-gray-600 text-sm mt-1">
                                             {post.information}
                                         </p>
-                                        {post.happenings && (
-                                            <p className="text-blue-500 text-xs mt-1">
-                                                🏗️ {post.happenings}
-                                            </p>
-                                        )}
-                                        {post.picture && (
-                                            <img
-                                                src={post.picture}
-                                                alt="Building"
-                                                className="rounded-lg mt-3 w-full object-cover max-h-56"
-                                            />
-                                        )}
-                                        {post.video && (
-                                            <video
-                                                src={post.video}
-                                                controls
-                                                className="rounded-lg mt-3 w-full max-h-56"
-                                            />
-                                        )}
                                     </div>
                                 ))}
                             </div>

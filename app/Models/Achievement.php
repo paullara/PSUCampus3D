@@ -8,7 +8,7 @@ class Achievement extends Model
 {
     protected $fillable = [
         'user_id',
-        'achievement',
+        'achievements',
         'achievement_pic'
     ];
     

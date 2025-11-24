@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BuildingController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InfoBuildingController;
 use App\Http\Controllers\ArtsAndScienceController;
 use App\Http\Controllers\AchievementController;
@@ -43,15 +44,27 @@ Route::put('/info-buildings/{id}', [InfoBuildingController::class, 'update']);
 Route::delete('/info-buildings/{id}', [InfoBuildingController::class, 'destroy']);
 
 // Happenings
+Route::get('/happenings/json', [HappeningController::class, 'index']);
 Route::get('/happenings/{role}', [HappeningController::class, 'getByRole']);
+Route::post('/happenings', [HappeningController::class, 'store']);
+Route::put('/happenings/{id}', [HappeningController::class, 'update']);
+Route::delete('/happenings/{id}', [HappeningController::class, 'destroy']);
 
 // Services
+Route::get('/services/json', [ServicesController::class, 'index']);
 Route::get('/services/{role}', [ServicesController::class, 'getByRole']);
+// Route::get('/services', [ServicesController::class, 'index']);
+Route::post('/services', [ServicesController::class, 'store']);
+Route::put('/services/{id}', [ServicesController::class, 'update']);
+Route::delete('/service/{id}', [ServicesController::class, 'destroy']);
 
 // Achievements
+Route::get('/achievements/json', [AchievementController::class, 'index']);
 Route::get('/achievements/{role}', [AchievementController::class, 'getByRole']);
-
-
+// Route::get('/achievements', [AchievementController::class, 'index']);
+Route::post('/achievements', [AchievementController::class, 'store']);
+Route::put('/achievements/{id}', [AchievementController::class, 'update']);
+Route::delete('/achievements/{id}', [AchievementController::class, 'destroy']);
 
 
 // Cayetano
@@ -102,6 +115,11 @@ Route::get('/cashier/posting', [DashboardController::class, 'cashierOffice'])->n
 // Arts & Science
 Route::get('/general-education/posting', [DashboardController::class, 'generalEducation'])->name('gened.posting');
 Route::get('/production&auxiliary-services/posting', [DashboardController::class, 'productionAndAuxiliaryServicesOffice'])->name('paso.posting');
+
+// Admin
+Route::get('/admin/happenings', [AdminController::class, 'happenings'])->name('admin.happenings');
+Route::get('/admin/services', [AdminController::class, 'services'])->name('admin.services');
+Route::get('/admin/achievements', [AdminController::class, 'achievements'])->name('admin.achievements');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
