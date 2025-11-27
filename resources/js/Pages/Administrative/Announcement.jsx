@@ -55,9 +55,9 @@ export default function Announcement() {
         }
     };
 
-    const handleEdit = (service) => {
-        setForm({ announcement: service.announcement });
-        setEditingId(service.id);
+    const handleEdit = (announcement) => {
+        setForm({ announcement: announcement.announcement });
+        setEditingId(announcement.id);
     };
 
     const handleDelete = async (id) => {
@@ -65,7 +65,7 @@ export default function Announcement() {
 
         try {
             await axios.delete(`/announcements/${id}`);
-            setServicesList(announcementList.filter((p) => p.id !== id));
+            setAnnouncementList(announcementList.filter((p) => p.id !== id));
         } catch (err) {
             alert("Failed to delete.");
         }

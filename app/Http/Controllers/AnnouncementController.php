@@ -49,7 +49,7 @@ class AnnouncementController extends Controller
 
     public function update(Request $request, $id)
     {
-        $annnouncement = Announcement::findOrFail($id);
+        $announcement = Announcement::findOrFail($id);
 
         $validated = $request->validate([
             'user_id' => 'sometimes:exists:users,id',
