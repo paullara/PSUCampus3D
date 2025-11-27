@@ -20,4 +20,6 @@ class BldgInfoJson extends Controller
             'post' => $post
         ]);
     }
+
+    
 }

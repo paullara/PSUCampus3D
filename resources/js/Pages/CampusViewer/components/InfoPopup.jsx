@@ -326,6 +326,40 @@ export default function InfoPopup({ popupInfo, onClose, onFlyTo }) {
                         </div>
                     </div>
                 )}
+
+                {info.announcements && (
+                    <div style={{ marginBottom: 16 }}>
+                        <div
+                            style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: PSU_BLUE,
+                                textTransform: "uppercase",
+                                letterSpacing: 0.5,
+                                marginBottom: 8,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                            }}
+                        >
+                            Announcement
+                        </div>
+                        <div
+                            style={{
+                                padding: 12,
+                                borderRadius: 6,
+                                background: "#fff",
+                                border: `1.5px solid ${PSU_GOLD}`,
+                                transition: "all 0.2s ease",
+                                lineHeight: 1.6,
+                                color: "#333",
+                                fontSize: 14,
+                            }}
+                        >
+                            {info.announcements}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Action Buttons */}

@@ -10,9 +10,6 @@ class InfoBuilding extends Model
         'user_id',
         'name',
         'information',
-        // 'picture',
-        // 'video',
-        // 'happenings',
     ];
 
     public function user()

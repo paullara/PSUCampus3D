@@ -21,4 +21,9 @@ class AdminController extends Controller
     {
         return Inertia::render('Admin/AchievementPosting');
     }
+
+    public function postBldgInfo()
+    {
+        return Inertia::render('Admin/InfoBuilding');
+    }
 }

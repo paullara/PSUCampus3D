@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(InfoBuildingsTableSeeder::class);
         // $this->call(ServicesSeeder::class);
         // $this->call(HappeningsSeeder::class);
-        $this->call(AchievementsSeeder::class);
+        // $this->call(AchievementsSeeder::class);
+        $this->call(AnnouncementSeeder::class);
     }
 }

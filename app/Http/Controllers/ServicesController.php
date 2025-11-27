@@ -53,7 +53,7 @@ class ServicesController extends Controller
         $service = Service::findOrFail($id);
 
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'sometimes|exists:users,id',
             'services' => 'required|string|max:255',
         ]);
 
@@ -72,4 +72,3 @@ class ServicesController extends Controller
         ]);
     }
 }
- 

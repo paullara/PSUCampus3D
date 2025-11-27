@@ -62,8 +62,8 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->intended('/registrar/posting');
             case 'mis':
                 return redirect()->intended('/mis/posting');
-            case 'administrative_office':
-                return redirect()->intended('/administrative-office/posting');
+            case 'administrative':
+                return redirect()->intended('/administrative/postInfoBuildings');
             case 'supply_office':
                 return redirect()->intended('/supply-office/posting');
             case 'accounting_office':

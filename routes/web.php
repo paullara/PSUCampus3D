@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdministrativeController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\InfoBuildingController;
 use App\Http\Controllers\ArtsAndScienceController;
 use App\Http\Controllers\AchievementController;
@@ -39,9 +41,10 @@ Route::get('/info-building/{role}', [InfoBuildingController::class, 'getByRole']
 Route::get('/info-buildings/{id}', [InfoBuildingController::class, 'show']);
 Route::get('/information/json', [BldgInfoJson::class, 'getBuildingInfoPost']);
 Route::get('/info-buildings', [InfoBuildingController::class, 'index']);
-Route::post('/info-buildings', [InfoBuildingController::class, 'store']);
-Route::put('/info-buildings/{id}', [InfoBuildingController::class, 'update']);
-Route::delete('/info-buildings/{id}', [InfoBuildingController::class, 'destroy']);
+Route::post('/info-buildings', [InfoBuildingController::class, 'store'])->name('info.buildings.store');
+
+Route::put('/info-buildings/{id}', [InfoBuildingController::class, 'update'])->name('info.buildings.update');
+Route::delete('/info-buildings/{id}', [InfoBuildingController::class, 'destroy'])->name('info.buildings.destroy');
 
 // Happenings
 Route::get('/happenings/json', [HappeningController::class, 'index']);
@@ -56,7 +59,7 @@ Route::get('/services/{role}', [ServicesController::class, 'getByRole']);
 // Route::get('/services', [ServicesController::class, 'index']);
 Route::post('/services', [ServicesController::class, 'store']);
 Route::put('/services/{id}', [ServicesController::class, 'update']);
-Route::delete('/service/{id}', [ServicesController::class, 'destroy']);
+Route::delete('/services/{id}', [ServicesController::class, 'destroy']);
 
 // Achievements
 Route::get('/achievements/json', [AchievementController::class, 'index']);
@@ -66,6 +69,12 @@ Route::post('/achievements', [AchievementController::class, 'store']);
 Route::put('/achievements/{id}', [AchievementController::class, 'update']);
 Route::delete('/achievements/{id}', [AchievementController::class, 'destroy']);
 
+// Announcement
+Route::get('/announcements/json', [AnnouncementController::class, 'index']);
+Route::get('/announcements/{role}', [AnnouncementController::class, 'getByRole']);
+Route::post('/announcements', [AnnouncementController::class, 'store']);
+Route::put('/announcements/{id}', [AnnouncementController::class, 'update']);
+Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy']);
 
 // Cayetano
 Route::get('/cayetano/posting', [DashboardController::class, 'cayetano'])->name('cayetano.posting');
@@ -120,6 +129,15 @@ Route::get('/production&auxiliary-services/posting', [DashboardController::class
 Route::get('/admin/happenings', [AdminController::class, 'happenings'])->name('admin.happenings');
 Route::get('/admin/services', [AdminController::class, 'services'])->name('admin.services');
 Route::get('/admin/achievements', [AdminController::class, 'achievements'])->name('admin.achievements');
+Route::get('/admin/infobuildings', [AdminController::class, 'postBldgInfo'])->name('admin.bldgInfo');
+
+Route::get('/administrative/postInfoBuildings', [AdministrativeController::class, 'postInfoBldg'])->name('administrative.postInfoBldg');
+Route::get('/administrative/happenings', [AdministrativeController::class, 'happenings'])->name('administrative.happenings');
+Route::get('/administrative/services', [AdministrativeController::class, 'services'])->name('administrative.services');
+Route::get('/administrative/achievements', [AdministrativeController::class, 'achievements'])->name('administrative.achievements');
+Route::get('/administrative/building-information', [AdministrativeController::class, 'BuildingInfo'])->name('administrative.bldg.info');
+Route::get('/administrative/announcement', [AdministrativeController::class, 'announcement'])->name('administrative.announcement');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

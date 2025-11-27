@@ -26,36 +26,49 @@ class InfoBuildingController extends Controller
         return response()->json(InfoBuilding::all());
     }
 
+    // public function store(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'information' => 'nullable|string',
+
+    //     ]);
+
+    //     $validated['user_id'] = auth()->id();
+
+    //     $info = InfoBuilding::create($validated);
+    //     return response()->json($info, 201);
+    // }
+
+    // public function store(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'user_id' => 'required|exists:users,id',
+    //         'name' => 'required|string|max:255',
+    //         'information' => 'nullable|string',
+    //     ]);
+
+    //     $info = InfoBuilding::create($validated);
+
+    //     return response()->json([
+    //         'message' => 'Info building created successfully',
+    //         'data' => $info
+    //     ], 201);
+    // }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
             'name' => 'required|string|max:255',
             'information' => 'nullable|string',
-            'happenings' => 'nullable|string',
-            'video' => 'nullable|mimes:mp4,mov,avi,wmv|max:512000',
-            'picture' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:51200'
-
         ]);
 
-        $validated['user_id'] = auth()->id();
+        InfoBuilding::create($validated);
 
-        if ($request->hasFile('picture')) {
-            $file = $request->file('picture');
-            $filename = uniqid() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('images'), $filename);
-            $validated['picture'] = '/images/' . $filename;
-        }
-
-        if ($request->hasFile('video')) {
-            $file = $request->file('video');
-            $filename = uniqid() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('videos'), $filename);
-            $validated['video'] = '/videos/' . $filename;
-        }
-
-        $info = InfoBuilding::create($validated);
-        return response()->json($info, 201);
+        return redirect()->back()->with('success', 'Information Posted!');
     }
+
 
     public function show($id)
     {
@@ -91,13 +104,15 @@ class InfoBuildingController extends Controller
         }
 
         $info->update($validated);
-        return response()->json($info);
+        // return response()->json($info);
+        return back()->with('success', 'updated');
     }
 
     public function destroy($id)
     {
         $info = InfoBuilding::findOrFail($id);
         $info->delete();
-        return response()->json(['message' => 'Deleted']);
+        // return response()->json(['message' => 'Deleted']);
+        return back()->with('sucess', 'deleted');
     }
 }

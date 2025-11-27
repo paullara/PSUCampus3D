@@ -189,12 +189,14 @@ export default function CampusViewer() {
         groupMeta = null
     ) => {
         try {
-            const [infoRes, happRes, serviceRes, achiRes] = await Promise.all([
-                axios.get(`/info-building/${role}`),
-                axios.get(`/happenings/${role}`),
-                axios.get(`/services/${role}`),
-                axios.get(`/achievements/${role}`),
-            ]);
+            const [infoRes, happRes, serviceRes, achiRes, annRes] =
+                await Promise.all([
+                    axios.get(`/info-building/${role}`),
+                    axios.get(`/happenings/${role}`),
+                    axios.get(`/services/${role}`),
+                    axios.get(`/achievements/${role}`),
+                    axios.get(`/announcements/${role}`),
+                ]);
 
             const infoEntries = Array.isArray(infoRes.data)
                 ? infoRes.data
@@ -216,11 +218,17 @@ export default function CampusViewer() {
                 : achiRes.data
                 ? [achiRes.data]
                 : [];
+            const announcementEntries = Array.isArray(annRes.data)
+                ? annRes.data
+                : annRes.data
+                ? [annRes.data]
+                : [];
 
             const latestInfo = infoEntries[0] || {};
             const latestHapp = happEntries[0] || {};
             const latestService = serviceEntries[0] || {};
             const latestAchievement = achievementEntries[0] || {};
+            const latestAnnouncement = announcementEntries[0] || {};
 
             setPopupInfo({
                 id: role,
@@ -235,11 +243,13 @@ export default function CampusViewer() {
                 services: latestService.services || null,
                 achievements: latestAchievement.achievements || null,
                 achievement_pic: latestAchievement.achievement_pic || null,
+                announcements: latestAnnouncement.announcement || null,
 
                 infoCount: infoEntries.length,
                 happCount: happEntries.length,
                 serviceCount: serviceEntries.length,
                 achievementCount: achievementEntries.length,
+                announcementCount: announcementEntries.length,
 
                 x: clientX,
                 y: clientY,
@@ -248,6 +258,7 @@ export default function CampusViewer() {
                 _rawHappenings: happEntries,
                 _rawServices: serviceEntries,
                 _rawAchievements: achievementEntries,
+                _rawAnnouncements: announcementEntries,
             });
         } catch (err) {
             console.error("Error fetching popup data:", err);
