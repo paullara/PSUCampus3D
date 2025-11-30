@@ -11,14 +11,9 @@ class AudioVisualController extends Controller
     {
         return Inertia::render('AudioVisual/HappeningPosting');
     }
-
-    public function services()
+     
+    public function announcement()
     {
-        return Inertia::render('AudioVisual/ServicesPosting');
-    }
-
-    public function achievements()
-    {
-        return Inertia::render('AudioVisual/AchievementPosting');
+        return Inertia::render('AudioVisual/Announcement');
     }
 }

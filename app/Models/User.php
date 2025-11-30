@@ -71,4 +71,41 @@ class User extends Authenticatable
     {
         return $this->hasMany(Announcement::class);
     }
+
+    public static function getRoles()
+    {
+        return [
+            'arts_science',
+            'academic',
+            'education',
+            'sac',
+            'cayetano',
+            'administrative',
+            'hm_lb',
+            'cc',
+            'agri',
+            'audiovisual',
+            'twinbldg',
+            'student',
+            'gened',
+            'paso',
+            'registrar',
+            'mis',
+            'administrative_office',
+            'supply_office',
+            'accounting_office',
+            'cashier_office',
+            'library_office',
+            'guidance_office',
+            'student_services_office',
+            'supreme_student_council',
+            'clinic',
+            'hmo',
+            'boa',
+            'it_dept',
+            'ced',
+            'coa',
+            'admin',
+        ];
+    }
 }

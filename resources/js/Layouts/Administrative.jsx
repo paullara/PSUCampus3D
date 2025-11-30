@@ -27,6 +27,12 @@ export default function Administrative({ header, children }) {
 
                 <nav className="flex flex-col gap-7 items-start p-9">
                     <NavLink
+                        href={route("accounts.index")}
+                        active={route().current("accounts.index")}
+                    >
+                        Manage Account
+                    </NavLink>
+                    <NavLink
                         href={route("administrative.bldg.info")}
                         active={route().current("administrative.bldg.info")}
                     >
@@ -128,7 +134,7 @@ export default function Administrative({ header, children }) {
                 </header>
 
                 {/* PAGE CONTENT */}
-                <main className="p-6 max-w-5xl mx-auto w-full min-h-[calc(100vh-4rem)] overflow-y-auto">
+                <main className="p-6  mx-auto w-full min-h-[calc(100vh-4rem)] overflow-y-auto">
                     {children}
                 </main>
             </div>

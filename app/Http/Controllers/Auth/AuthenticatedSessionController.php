@@ -81,13 +81,13 @@ class AuthenticatedSessionController extends Controller
             case 'clinic':
                 return redirect()->intended('/clinic/posting');
             case 'hmo':
-                return redirect()->intended('/hmo/posting');
+                return redirect()->intended('/hmo/happenings');
             case 'boa':
-                return redirect()->intended('/boa/posting');
+                return redirect()->intended('/boa/happenings');
             case 'it_dept': 
-                return redirect()->intended('/it-dept/posting');
+                return redirect()->intended('/it/happenings');
             case 'ced': 
-                return redirect()->intended('/ced/posting');
+                return redirect()->intended('/ced/happenings');
             case 'coa': 
                 return redirect()->intended('/coa/posting');
             case 'admin':

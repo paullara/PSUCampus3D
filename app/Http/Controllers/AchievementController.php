@@ -61,7 +61,7 @@ class AchievementController extends Controller
         $achievement = Achievement::findOrFail($id);
 
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'sometimes|exists:users,id',
             'achievements' => 'sometimes|string|max:255',
             'achievement_pic' => 'nullable|file|mimes:jpg,jpeg,png,gif',
         ]);

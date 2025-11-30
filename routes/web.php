@@ -3,9 +3,17 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AdministrativeController;
+use App\Http\Controllers\AudioVisualController;
+use App\Http\Controllers\BOAController;
+use App\Http\Controllers\CashierController;
+use App\Http\Controllers\CEDController;
+use App\Http\Controllers\COAController;
+use App\Http\Controllers\HMOController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\InfoBuildingController;
+use App\Http\Controllers\ITDeptController;
 use App\Http\Controllers\ArtsAndScienceController;
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\ServicesController;
@@ -138,6 +146,30 @@ Route::get('/administrative/achievements', [AdministrativeController::class, 'ac
 Route::get('/administrative/building-information', [AdministrativeController::class, 'BuildingInfo'])->name('administrative.bldg.info');
 Route::get('/administrative/announcement', [AdministrativeController::class, 'announcement'])->name('administrative.announcement');
 
+Route::get('/audiovisual/happenings', [AudioVisualController::class, 'happenings'])->name('audiovisual.happenings');
+Route::get('/audiovisual/announcement', [AudioVisualController::class, 'announcement'])->name('audiovisual.announcement');
+
+Route::get('/hmo/happenings', [HMOController::class, 'happenings'])->name('hmo.happenings');
+Route::get('/hmo/services', [HMOController::class, 'services'])->name('hmo.services');
+Route::get('/hmo/achievements', [HMOController::class, 'achievements'])->name('hmo.achievements');
+Route::get('/hmo/announcements', [HMOController::class, 'announcement'])->name('hmo.announcement');
+
+Route::get('/boa/happenings', [BOAController::class, 'happenings'])->name('boa.happenings');
+Route::get('/boa/services', [BOAController::class, 'services'])->name('boa.services');
+Route::get('/boa/achievements', [BOAController::class, 'achievements'])->name('boa.achievements');
+Route::get('/boa/announcements', [BOAController::class, 'announcement'])->name('boa.announcement');
+
+Route::get('/ced/happenings', [CEDController::class, 'happenings'])->name('ced.happenings');
+Route::get('/ced/services', [CEDController::class, 'services'])->name('ced.services');
+Route::get('/ced/achievements', [CEDController::class, 'achievements'])->name('ced.achievements');
+Route::get('/ced/announcements', [CEDController::class, 'announcement'])->name('ced.announcement');
+
+Route::get('/it/happenings', [ITDeptController::class, 'happenings'])->name('it.happenings');
+Route::get('/it/services', [ITDeptController::class, 'services'])->name('it.services');
+Route::get('/it/achievements', [ITDeptController::class, 'achievements'])->name('it.achievements');
+Route::get('/it/announcements', [ITDeptController::class, 'announcement'])->name('it.announcement');
+
+Route::resource('accounts', AccountController::class);
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

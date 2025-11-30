@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Academic from "@/Layouts/Academic";
+// import Academic from "@/Layouts/Academic";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
 

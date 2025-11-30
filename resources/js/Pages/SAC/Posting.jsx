@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import SAC from "@/Layouts/SAC";
+// import SAC from "@/Layouts/SAC";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
 
