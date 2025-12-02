@@ -1,0 +1,1 @@
+import{j as s}from"./app-C6JDbxEX.js";function i({value:t,className:e="",children:o,...n}){const r=e.includes("text-");return s.jsx("label",{...n,className:`block text-sm font-medium ${r?"":"text-gray-700"} `+e,children:t||o})}export{i as I};
