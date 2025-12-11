@@ -9,6 +9,30 @@ import { STATIC_BUILDING_INFO } from "./data/buildingInfo";
 import axios from "axios";
 import { MapPin } from "lucide-react";
 
+const officeFloors = {
+    hmo: "1st Floor",
+    boa: "3rd Floor",
+    it_dept: "2nd Floor",
+    ced: "2nd Floor",
+    coa: "1st Floor",
+
+    gened: "1st Floor",
+    paso: "1st Floor",
+
+    guidance_office: "2nd Floor",
+    student_services_office: "2nd Floor",
+    supreme_student_council: "2nd Floor",
+    clinic: "1st Floor",
+
+    registrar: "1st Floor",
+    mis: "1st Floor",
+    administrative_office: "1st Floor",
+    supply_office: "1st Floor",
+    accounting_office: "1st Floor",
+    cashier_office: "1st Floor",
+    library_office: "2nd Floor",
+};
+
 export default function CampusViewer() {
     const containerRef = useRef(null);
     const modelRef = useRef(null);
@@ -954,11 +978,13 @@ export default function CampusViewer() {
                                             n.userData?.buildingName ||
                                             n.userData?.name ||
                                             id;
+                                        const floor = childRole && officeFloors[childRole] ? officeFloors[childRole] : null;
                                         return {
                                             id,
                                             displayName: display,
                                             role: childRole,
                                             mesh: n,
+                                            floor: floor,
                                         };
                                     })
                                     .filter(
@@ -991,11 +1017,13 @@ export default function CampusViewer() {
                                             officeRoleLabelMap[officeRole] ||
                                             staticMeta?.name ||
                                             officeRole;
+                                        const floorForRole = officeFloors[officeRole] || null;
                                         children.push({
                                             id: officeRole,
                                             displayName: formal,
                                             role: officeRole,
                                             mesh: null,
+                                            floor: floorForRole,
                                         });
                                     }
                                 }
@@ -1650,6 +1678,19 @@ export default function CampusViewer() {
                                                                         c.displayName
                                                                     }
                                                                 </div>
+                                                                {(c.floor || (c.role && officeFloors[c.role])) && (
+                                                                    <div
+                                                                        style={{
+                                                                            fontSize: 10,
+                                                                            color: PSU_BLUE,
+                                                                            fontWeight: 500,
+                                                                            marginTop: 2,
+                                                                            opacity: 0.8,
+                                                                        }}
+                                                                    >
+                                                                        Floor: {c.floor || officeFloors[c.role]}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                             <button
                                                                 onClick={() =>

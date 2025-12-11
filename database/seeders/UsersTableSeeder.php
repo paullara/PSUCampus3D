@@ -21,7 +21,7 @@ class UsersTableSeeder extends Seeder
         foreach ($roles as $role) {
             User::create([
                 'name' => ucfirst($role) . ' User',
-                'email' => $role . '@example.com',
+                'email' => $role . '@gmail.com',
                 'password' => Hash::make('password'),
                 'role' => $role,
                 'email_verified_at' => now(),

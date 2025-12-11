@@ -12,6 +12,10 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                "psu-blue": "#003087",
+                "psu-gold": "#FFC72C",
+            },
             fontFamily: {
                 sans: ["Poppins", ...defaultTheme.fontFamily.sans],
             },
